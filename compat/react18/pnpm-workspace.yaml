@@ -1,5 +1,0 @@
-# Keep this consumer outside the parent workspace and its React 19 Catalog.
-packages: []
-
-overrides:
-  '@types/react': 18.2.79

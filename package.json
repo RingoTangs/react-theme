@@ -68,7 +68,7 @@
     "dev": "tsdown",
     "build": "cross-env NODE_ENV=production tsdown",
     "test": "vitest run",
-    "test:react18": "pnpm build && node compat/react18/verify.mjs",
+    "test:react18": "pnpm build && node tests/compat/react18/verify.mjs",
     "test:e2e": "pnpm build && pnpm --filter @react-theme/react-spa build && pnpm --filter @react-theme/tanstack-start build && playwright test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

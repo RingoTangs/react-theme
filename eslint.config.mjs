@@ -13,4 +13,10 @@ export default antfu({
   pnpm: {
     catalogs: false,
   },
-}).append(prettier)
+}).append(prettier, {
+  files: ['pnpm-workspace.yaml'],
+  rules: {
+    // React 18 and React 19 intentionally share package names across catalogs.
+    'pnpm/yaml-no-duplicate-catalog-item': 'off',
+  },
+})

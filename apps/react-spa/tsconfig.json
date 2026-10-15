@@ -1,6 +1,12 @@
 {
   "extends": "@ringotangs/tsconfig/react",
   "compilerOptions": {
+    "paths": {
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"],
+      "react-dom": ["./node_modules/@types/react-dom"],
+      "react-dom/*": ["./node_modules/@types/react-dom/*"]
+    },
     "types": ["vite/client", "node"],
     "allowImportingTsExtensions": true
   },

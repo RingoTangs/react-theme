@@ -4,5 +4,6 @@ import { defineConfig } from 'vite'
 import { themeOptions } from './src/theme-options.ts'
 
 export default defineConfig({
+  resolve: { dedupe: ['react', 'react-dom'] },
   plugins: [react(), reactTheme(themeOptions)],
 })

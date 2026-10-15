@@ -6,14 +6,19 @@ This is a small TypeScript package template built with `tsdown`. Source code liv
 
 Use the `@` alias for imports from `src/` when it improves readability, for example `@/utils`.
 
+The root is the only publishable package. Root Vitest and `apps/tanstack-start` use React 19 from the default Catalog; `apps/react-spa` uses React 18.2.0 and matching types from the named `react18` Catalog. All projects share the root `pnpm-lock.yaml`. Do not create independent compatibility packages or nested lockfiles. Packed React 18 consumer checks live in `tests/compat/react18/` and reuse the SPA dependencies; the library stays external to React in both output formats.
+
+Keep the SPA's TypeScript paths pointing to its installed React 18 types so linked library declarations do not pick up the root React 19 types. These paths must not bypass the library's public package entry.
+
 ## Build, Test, and Development Commands
 
 Use pnpm with Node.js `22.23.2`. Generated packages support Node.js `>=22`.
 
 - `pnpm dev`: creates unminified CJS and ESM development bundles and declarations in `dist/`.
 - `pnpm build`: creates minified CJS and ESM production bundles and declarations in `dist/`.
-- `pnpm test`: starts Vitest in watch mode.
-- `pnpm test:run`: runs the Vitest suite once for CI-style checks.
+- `pnpm test`: runs the React 19 Vitest suite once.
+- `pnpm test:react18`: builds the library, checks SPA Vite module resolution, and verifies the real npm tarball against the SPA's React 18 runtime and types; never installs dependencies.
+- `pnpm test:e2e`: builds the library and both apps, then tests the production React 18 SPA and React 19 Start in Chromium.
 - `pnpm lint`: runs ESLint over the repository.
 - `pnpm lint:fix`: applies safe ESLint fixes.
 - `pnpm format`: checks formatting with Prettier.
@@ -32,7 +37,7 @@ Formatting is handled by Prettier, while ESLint uses `@antfu/eslint-config` with
 
 ## Testing Guidelines
 
-Vitest is the test framework. Add tests next to the code they cover under `src/`, using names like `*.test.ts` or `*.spec.ts`; for example, `src/utils/format.test.ts`. Prefer fast unit tests for exported behavior. Run `pnpm test:run` before opening a pull request.
+Vitest is the unit test framework. Add tests next to the code they cover under `src/`, using names like `*.test.ts` or `*.spec.ts`; for example, `src/utils/format.test.ts`. Prefer fast unit tests for exported behavior. Run `pnpm test` before opening a pull request. Compatibility type samples are compiled by `test:react18` against React 18, rather than by the root React 19 typecheck. Keep the existing React 19 unit and Start SSR coverage when changing compatibility checks. SPA Vite resolution must dedupe React and ReactDOM, and E2E must check the actual browser renderer version as well as theme behavior.
 
 ## Commit & Pull Request Guidelines
 

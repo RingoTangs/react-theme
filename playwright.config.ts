@@ -1,5 +1,6 @@
-import type { ThemeTestOptions } from './tests/e2e/theme.fixture'
+import type { ThemeTestOptions } from './tests/e2e/options'
 import { defineConfig, devices } from '@playwright/test'
+import { version as react19Version } from 'react'
 
 export default defineConfig<ThemeTestOptions>({
   testDir: './tests/e2e',
@@ -17,12 +18,20 @@ export default defineConfig<ThemeTestOptions>({
     {
       name: 'react-spa-chromium',
       testMatch: 'theme.spec.ts',
-      use: { baseURL: 'http://127.0.0.1:4173', darkClassName: 'theme-dark' },
+      use: {
+        baseURL: 'http://127.0.0.1:4173',
+        darkClassName: 'theme-dark',
+        reactVersion: '18.2.0',
+      },
     },
     {
       name: 'tanstack-start-chromium',
       testMatch: ['theme.spec.ts', 'ssr.spec.ts'],
-      use: { baseURL: 'http://127.0.0.1:4174', darkClassName: 'dark' },
+      use: {
+        baseURL: 'http://127.0.0.1:4174',
+        darkClassName: 'dark',
+        reactVersion: react19Version,
+      },
     },
   ],
   webServer: [

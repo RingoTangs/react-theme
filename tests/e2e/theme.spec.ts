@@ -7,6 +7,33 @@ import {
   themeButton,
 } from './theme.fixture'
 
+test('runs the expected React renderer without duplicate React errors', async ({
+  page,
+  darkClassName,
+  reactVersion,
+}) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text())
+  })
+  await openApp(page, darkClassName)
+  await themeButton(page, 'light').click()
+  await expectTheme(page, 'light', 'light', darkClassName)
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const hook = Reflect.get(window, '__REACT_DEVTOOLS_GLOBAL_HOOK__')
+        return Array.from(
+          hook.renderers.values(),
+          (renderer: { version: string }) => renderer.version,
+        )
+      }),
+    )
+    .toEqual([reactVersion])
+  expect(errors).toEqual([])
+})
+
 for (const mode of ['light', 'dark', 'system'] as const) {
   test(`${mode} selection persists across reload`, async ({
     page,

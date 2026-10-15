@@ -22,25 +22,24 @@ function report(message) {
 }
 
 const fixture = path.dirname(fileURLToPath(import.meta.url))
-const repo = path.resolve(fixture, '../..')
-const localRequire = createRequire(path.join(fixture, 'package.json'))
+const repo = path.resolve(fixture, '../../..')
+const spa = path.join(repo, 'apps/react-spa')
+const localRequire = createRequire(path.join(spa, 'package.json'))
 const rootRequire = createRequire(path.join(repo, 'package.json'))
-const expected = JSON.parse(
-  readFileSync(path.join(fixture, 'package.json'), 'utf8'),
-).devDependencies
+// Exact minimum-version compatibility assertions; dependency declarations live in catalogs.react18.
+const expected = {
+  react: '18.2.0',
+  'react-dom': '18.2.0',
+  '@types/react': '18.2.79',
+  '@types/react-dom': '18.2.25',
+}
 
-// Resolve and check every isolated dependency before creating or packing anything.
-assert.ok(
-  existsSync(path.join(fixture, 'node_modules')),
-  `Install the isolated consumer first: cd ${fixture} && pnpm install --ignore-scripts`,
-)
 for (const [name, version] of Object.entries(expected)) {
   const manifest = localRequire.resolve(`${name}/package.json`)
   assert.ok(
-    realpathSync(manifest).startsWith(
-      realpathSync(path.join(fixture, 'node_modules')) + path.sep,
-    ),
-    `${name} must come from the isolated consumer; run pnpm install --ignore-scripts in ${fixture}`,
+    realpathSync(manifest) ===
+      realpathSync(path.join(spa, 'node_modules', name, 'package.json')),
+    `${name} must resolve from the SPA; run pnpm install in ${repo}`,
   )
   assert.equal(
     localRequire(`${name}/package.json`).version,
@@ -63,8 +62,24 @@ assert.equal(
   realpathSync(localRequire.resolve('@types/react/package.json')),
 )
 report(
-  'PASS: isolated React/ReactDOM 18.2.0 and matching React 18 types; no root React 19 resolution',
+  'PASS: SPA resolves React/ReactDOM 18.2.0 and matching React 18 types; no root React 19 fallback',
 )
+
+for (const [label, projectRequire] of [
+  ['root', rootRequire],
+  ['Start', createRequire(path.join(repo, 'apps/tanstack-start/package.json'))],
+]) {
+  assert.match(projectRequire('react').version, /^19\./)
+  assert.match(projectRequire('react-dom/package.json').version, /^19\./)
+  assert.match(projectRequire('@types/react/package.json').version, /^19\./)
+  assert.match(projectRequire('@types/react-dom/package.json').version, /^19\./)
+  report(
+    `PASS: ${label} resolves React ${projectRequire('react').version} and React 19 types`,
+  )
+}
+execFileSync(process.execPath, [path.join(fixture, 'resolve.mjs'), repo], {
+  stdio: 'inherit',
+})
 
 const consumer = mkdtempSync(path.join(tmpdir(), 'react-theme-react18-'))
 try {

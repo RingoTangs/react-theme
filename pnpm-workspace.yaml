@@ -8,6 +8,11 @@ trustPolicyExclude:
 packages:
   - apps/*
 
+# React DOM 18 types declare a wildcard React types dependency.
+# Keep that edge on React 18 without changing the React 19 consumers.
+overrides:
+  '@types/react-dom@18>@types/react': 'catalog:react18'
+
 catalog:
   '@antfu/eslint-config': ^8.3.0
   '@eslint-react/eslint-plugin': ^3.0.0
@@ -36,3 +41,9 @@ catalog:
   typescript: ^5.9.3
   vite: ^8.3.4
   vitest: ^4.1.11
+catalogs:
+  react18:
+    '@types/react': 18.2.79
+    '@types/react-dom': 18.2.25
+    react: 18.2.0
+    react-dom: 18.2.0

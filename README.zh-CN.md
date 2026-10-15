@@ -15,7 +15,7 @@
 
 ## 安装
 
-需要 React `^18.2.0 || ^19.0.0`。Workspace 继续使用 React 19，React 18.2.0 通过独立消费者测试验证真实打包产物。在 React 应用中安装：
+需要 React `^18.2.0 || ^19.0.0`。根目录测试和 TanStack Start 使用 React 19，Workspace SPA 和真实打包消费者检查使用 React 18.2.0。在 React 应用中安装：
 
 ```sh
 pnpm add @ringotangs/react-theme
@@ -303,9 +303,9 @@ pnpm pack:check  # 预览 npm 包内容
 
 ### 依赖版本与打包
 
-`pnpm-workspace.yaml` 的默认 `catalog` 是第三方 `dependencies`、
-`devDependencies` 版本的唯一配置入口。各 Workspace 项目保留自己的依赖声明，
-使用 `catalog:`；内部依赖保留 `workspace:*`。库的 React peer 范围保持
+`pnpm-workspace.yaml` 是依赖版本配置入口：默认 `catalog` 管理第三方依赖和 React 19，
+命名 Catalog `react18` 为 SPA 固定 React 18 及匹配类型。各项目保留自己的依赖声明，
+使用 `catalog:` 或 `catalog:react18`；内部依赖保留 `workspace:*`。库的 React peer 范围保持
 `^18.2.0 || ^19.0.0`，与开发环境的 React 版本独立。迁移条目时保留原有版本范围。
 修改声明后，在仓库根目录手动执行 `pnpm install --lockfile-only`，
 并检查锁文件是否出现非预期升级。
@@ -321,33 +321,46 @@ React peer 范围及核心、Vite 子入口。当前库的 Catalog 引用只位�
 若未来这些字段使用 Catalog，须保证发布产物中已转换为标准版本范围。
 本仓库继续保留 `private: true`，直到单独准备发布。
 
-### React 18 消费者验证
+### React 18 与 React 19 验证
 
-`compat/react18` 是根 Workspace 外的私有独立测试目录，固定使用
-`react@18.2.0`、`react-dom@18.2.0`、`@types/react@18.2.79` 和
-`@types/react-dom@18.2.25`。根 Catalog 和两个集成应用继续使用 React 19，
-现有 React/Vite optional peer 配置保持不变。
+所有项目共用根 pnpm Workspace 和唯一的 `pnpm-lock.yaml`：
 
-准备执行兼容性检查时，手动安装该目录的依赖：
+- 根目录 Vitest 和 `apps/tanstack-start` 使用默认 Catalog 的 React 19。
+- `apps/react-spa` 使用 `catalog:react18`：React/ReactDOM `18.2.0`、
+  `@types/react@18.2.79`、`@types/react-dom@18.2.25`。
+- 限定范围的 override 将 React DOM 18 的通配符 React 类型依赖保持在 React 18
+  Catalog，不影响 React 19 消费者。
+
+修改声明后在仓库根目录手动执行 `pnpm install`，不再有独立兼容性项目或安装步骤。
+安装后，在仓库根目录执行：
 
 ```sh
-cd compat/react18
-pnpm install --ignore-scripts
-cd ../..
+pnpm check
 pnpm test:react18
+pnpm test:e2e
+pnpm --filter @react-theme/react-spa typecheck
+pnpm --filter @react-theme/tanstack-start typecheck
+pnpm pack:check
 ```
 
-`test:react18` 构建库并在临时隔离消费者中检查真实 npm tarball，不自动安装依赖。
-脚本核对依赖版本、渲染器和类型解析路径，以及打包后的库与消费者使用同一 React 18 实例。
-覆盖 ESM/CJS 主题切换、恢复、System 变化、跨标签页 storage 事件、SSR、
-不覆盖偏好的 Hydration，以及 `skipLibCheck: false` 下的 React 18 JSX/CJS 声明。
-仅复用根目录现有的 TypeScript 和 jsdom 工具；React、ReactDOM 均来自独立目录。
-该目录的独立锁文件由手动安装生成，不手工编辑。
+`test:react18` 构建库后运行 `tests/compat/react18/verify.mjs`，复用 SPA 已安装的
+React 18 运行时和类型，检查真实解析路径及渲染器的 React 实例一致性，并确认根目录和
+Start 仍解析 React 19。脚本读取 SPA 的真实 Vite 配置，验证应用、链接库及渲染器导入的
+React、JSX runtime 和 ReactDOM 均解析到 SPA 的同一副本。应用通过
+`resolve.dedupe` 对 React 和 ReactDOM 去重。
+SPA 的 TypeScript paths 同时将链接库声明中的 React 类型解析固定为应用的 React 18
+类型，避免默认解析到根目录的 React 19 类型。
 
-已使用 React/ReactDOM 18.2.0 和上述匹配的 React 18 类型实际验证：
-真实打包产物的 ESM/CJS 运行时、JSX/CJS 类型声明均通过。尚未单独执行 React 18
-浏览器 E2E 或其他 React 18 patch/minor 版本测试。React 19 继续独立使用
-`pnpm check` 和 `pnpm test:e2e` 验证。
+实际 npm tarball 会解包至临时消费者，验证 ESM/CJS、主题切换、存储恢复、System
+变化、storage 事件同步、SSR、不覆盖偏好的 Hydration，以及
+`skipLibCheck: false` 下的 JSX/CJS 类型声明。测试命令不安装依赖，仅复用现有
+TypeScript 和 jsdom 工具；类型样例由消费者脚本编译，不使用根目录的 React 19 类型。
+
+Playwright 运行生产 React 18 SPA 和 React 19 Start；仅测试使用的 DevTools hook
+记录浏览器实际渲染器版本，断言只有一个符合预期的渲染器，且主题交互无 React 错误。
+两个应用保留原有全部主题测试场景。CI 在库构建后运行打包消费者检查，再执行 E2E
+和两个应用的类型检查。迁移后的检查已在 SPA 的 React 18.2.0 和根目录、Start 的
+React 19.3.1 下通过；尚未分别测试其他 React 18 patch/minor 版本。
 
 ## 集成测试应用
 

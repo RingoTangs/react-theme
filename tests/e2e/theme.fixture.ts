@@ -1,17 +1,32 @@
 import type { Page } from '@playwright/test'
+import type { ResolvedTheme, ThemeMode, ThemeTestOptions } from './options'
 import { test as base, expect } from '@playwright/test'
-
-export type ThemeMode = 'light' | 'dark' | 'system'
-export type ResolvedTheme = 'light' | 'dark'
-
-export interface ThemeTestOptions {
-  storedTheme: ThemeMode | null
-  darkClassName: string
-}
 
 export const test = base.extend<ThemeTestOptions>({
   storedTheme: ['dark', { option: true }],
   darkClassName: ['dark', { option: true }],
+  reactVersion: ['19', { option: true }],
+  page: async ({ page }, provide) => {
+    // Observe the actual browser renderer before ReactDOM initializes.
+    await page.addInitScript(() => {
+      const renderers = new Map<number, { version: string }>()
+      Object.assign(window, {
+        __REACT_DEVTOOLS_GLOBAL_HOOK__: {
+          supportsFiber: true,
+          renderers,
+          inject(renderer: { version: string }): number {
+            const id = renderers.size + 1
+            renderers.set(id, renderer)
+            return id
+          },
+          onCommitFiberRoot(): void {},
+          onCommitFiberUnmount(): void {},
+          checkDCE(): void {},
+        },
+      })
+    })
+    await provide(page)
+  },
   storageState: async ({ baseURL, storedTheme }, provide) => {
     if (!baseURL) throw new Error('An application baseURL is required')
     await provide({

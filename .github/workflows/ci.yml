@@ -80,6 +80,10 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Check React 18 packed consumer and Vite resolution
+        timeout-minutes: 5
+        run: pnpm test:react18
+
       # 检查最终 npm package 的内容是否符合预期
       # 具体行为取决于 package.json 中的 scripts["pack:check"]
       - name: Check package
@@ -117,6 +121,10 @@ jobs:
         id: e2e
         timeout-minutes: 10
         run: pnpm test:e2e --global-timeout=300000
+
+      # E2E 构建已生成 Start 路由树，可在干净环境下检查两个应用。
+      - name: Check app types
+        run: pnpm --filter @react-theme/react-spa typecheck && pnpm --filter @react-theme/tanstack-start typecheck
 
       - name: Upload failed E2E results
         if: ${{ failure() && steps.e2e.outcome == 'failure' }}
