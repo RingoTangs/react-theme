@@ -22,13 +22,16 @@ export function getSystemTheme(): ResolvedTheme {
   }
 }
 
-export function readStoredTheme(storageKey = THEME_STORAGE_KEY): ThemeMode {
+export function readStoredTheme(
+  storageKey = THEME_STORAGE_KEY,
+  fallback: ThemeMode = 'system',
+): ThemeMode {
   try {
-    if (typeof window === 'undefined') return 'system'
+    if (typeof window === 'undefined') return fallback
     const storedTheme = window.localStorage.getItem(storageKey)
-    return isThemeMode(storedTheme) ? storedTheme : 'system'
+    return isThemeMode(storedTheme) ? storedTheme : fallback
   } catch {
-    return 'system'
+    return fallback
   }
 }
 

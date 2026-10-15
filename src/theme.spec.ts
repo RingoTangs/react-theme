@@ -64,6 +64,20 @@ describe('getSystemTheme', () => {
 })
 
 describe('theme storage', () => {
+  it('uses an optional fallback while preserving valid stored system', () => {
+    expect(readStoredTheme('custom', 'dark')).toBe('dark')
+    window.localStorage.setItem('custom', 'invalid')
+    expect(readStoredTheme('custom', 'light')).toBe('light')
+    window.localStorage.setItem('custom', 'system')
+    expect(readStoredTheme('custom', 'dark')).toBe('system')
+  })
+
+  it('uses the configured fallback when storage is inaccessible', () => {
+    vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
+      throw new Error('Access denied')
+    })
+    expect(readStoredTheme('custom', 'dark')).toBe('dark')
+  })
   it.each(themeModes)('round-trips %s with the default key', (theme) => {
     persistTheme(theme)
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe(theme)
@@ -131,6 +145,7 @@ describe('ssr', () => {
     expect(core.isThemeMode('system')).toBe(true)
     expect(core.getSystemTheme()).toBe('light')
     expect(core.readStoredTheme()).toBe('system')
+    expect(core.readStoredTheme('custom', 'dark')).toBe('dark')
     expect(() => core.persistTheme('dark')).not.toThrow()
   })
 })
