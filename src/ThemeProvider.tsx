@@ -9,7 +9,7 @@ import {
   SYSTEM_THEME_QUERY,
   THEME_STORAGE_KEY,
 } from './theme'
-import { ThemeContext } from './theme-context'
+import { ThemeContext } from './ThemeContext'
 
 export interface ThemeProviderProps {
   children?: ReactNode
