@@ -1,11 +1,12 @@
 import type { ReactElement } from 'react'
 import type { ThemeMode, ThemeProviderProps } from './index'
+import { runInNewContext } from 'node:vm'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ThemeProvider, useTheme } from './index'
+import { getThemeScript, ThemeProvider, useTheme } from './index'
 
 function Consumer(): ReactElement {
   const { theme, resolvedTheme, setTheme } = useTheme()
@@ -279,8 +280,9 @@ describe('theme provider', () => {
       const initial = `${defaultTheme}/${defaultTheme === 'system' ? 'light' : defaultTheme}`
       expect(container.textContent).toBe(initial)
       document.body.append(container)
-      document.documentElement.classList.add('dark')
-      document.documentElement.style.colorScheme = 'dark'
+      runInNewContext(getThemeScript({ defaultTheme }), { window, document })
+      expect(document.documentElement).toHaveClass('dark')
+      expect(document.documentElement.style.colorScheme).toBe('dark')
       const toggle = vi.spyOn(document.documentElement.classList, 'toggle')
       const write = vi.spyOn(Storage.prototype, 'setItem')
       const error = vi.spyOn(console, 'error')

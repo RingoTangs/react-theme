@@ -1,3 +1,5 @@
+export { getThemeScript } from './getThemeScript'
+export type { ThemeScriptOptions } from './getThemeScript'
 export {
   getSystemTheme,
   isThemeMode,

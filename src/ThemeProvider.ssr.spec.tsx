@@ -3,9 +3,15 @@ import type { ThemeMode } from './index'
 import { createElement } from 'react'
 import { renderToString } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { ThemeProvider, useTheme } from './index'
+import { getThemeScript, ThemeProvider, useTheme } from './index'
 
 describe('ssr theme provider', () => {
+  it('generates an inline script without browser globals', () => {
+    expect(typeof window).toBe('undefined')
+    expect(typeof document).toBe('undefined')
+    expect(getThemeScript()).toContain('document.documentElement')
+    expect(getThemeScript()).not.toContain('<script')
+  })
   it.each(['system', 'dark', 'light'] as ThemeMode[])(
     'renders %s without browser globals',
     (defaultTheme) => {
