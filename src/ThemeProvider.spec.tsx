@@ -8,6 +8,20 @@ import { renderToString } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getThemeScript, ThemeProvider, useTheme } from './index'
 
+function Snapshot({
+  onRender,
+}: {
+  onRender: (value: string) => void
+}): ReactElement {
+  const { theme, resolvedTheme } = useTheme()
+  onRender(`${theme}/${resolvedTheme}`)
+  return (
+    <span>
+      {theme}/{resolvedTheme}
+    </span>
+  )
+}
+
 function Consumer(): ReactElement {
   const { theme, resolvedTheme, setTheme } = useTheme()
   return (
@@ -259,19 +273,14 @@ describe('theme provider', () => {
       media(true)
       window.localStorage.setItem('theme', 'dark')
       const snapshots: string[] = []
-      function Snapshot(): ReactElement {
-        const { theme, resolvedTheme } = useTheme()
-        snapshots.push(`${theme}/${resolvedTheme}`)
-        return (
-          <span>
-            {theme}/{resolvedTheme}
-          </span>
-        )
-      }
       const tree = (
         <StrictMode>
           <ThemeProvider defaultTheme={defaultTheme}>
-            <Snapshot />
+            <Snapshot
+              onRender={(value) => {
+                snapshots.push(value)
+              }}
+            />
           </ThemeProvider>
         </StrictMode>
       )

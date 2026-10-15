@@ -95,8 +95,15 @@ Calling `setTheme` updates the theme and attempts to save it. Initialization, sy
 
 ### useTheme
 
-```ts
-const { theme, resolvedTheme, setTheme } = useTheme()
+```tsx
+export default function ThemeStatus() {
+  const { theme, resolvedTheme } = useTheme()
+  return (
+    <span>
+      {theme} / {resolvedTheme}
+    </span>
+  )
+}
 ```
 
 - `theme: ThemeMode`: `light`, `dark`, or `system`.
@@ -201,6 +208,8 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 })
 
+/* eslint-disable react-refresh/only-export-components -- TanStack root modules export route configuration alongside the document shell. */
+/* eslint-disable react-dom/no-dangerously-set-innerhtml -- getThemeScript safely serializes inline script configuration. */
 function RootDocument({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -217,6 +226,8 @@ function RootDocument({ children }: { children: ReactNode }) {
     </html>
   )
 }
+/* eslint-enable react-dom/no-dangerously-set-innerhtml */
+/* eslint-enable react-refresh/only-export-components */
 ```
 
 Merge the shell into your existing root route, retaining its metadata, styles, route context, and error handling. The script precedes managed head content and hydration scripts. See TanStack's [document head management](https://tanstack.com/router/latest/docs/guide/document-head-management).

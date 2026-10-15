@@ -5,6 +5,11 @@ import { renderToString } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { getThemeScript, ThemeProvider, useTheme } from './index'
 
+function Consumer(): string {
+  const { theme, resolvedTheme } = useTheme()
+  return `${theme}/${resolvedTheme}`
+}
+
 describe('ssr theme provider', () => {
   it('generates an inline script without browser globals', () => {
     expect(typeof window).toBe('undefined')
@@ -15,10 +20,6 @@ describe('ssr theme provider', () => {
   it.each(['system', 'dark', 'light'] as ThemeMode[])(
     'renders %s without browser globals',
     (defaultTheme) => {
-      function Consumer(): string {
-        const { theme, resolvedTheme } = useTheme()
-        return `${theme}/${resolvedTheme}`
-      }
       expect(typeof window).toBe('undefined')
       expect(
         renderToString(

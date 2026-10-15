@@ -95,8 +95,15 @@ Provider 切换 `document.documentElement` 的 `dark` class，并将其 `style.c
 
 ### useTheme
 
-```ts
-const { theme, resolvedTheme, setTheme } = useTheme()
+```tsx
+export default function ThemeStatus() {
+  const { theme, resolvedTheme } = useTheme()
+  return (
+    <span>
+      {theme} / {resolvedTheme}
+    </span>
+  )
+}
 ```
 
 - `theme: ThemeMode`：`light`、`dark` 或 `system`。
@@ -201,6 +208,8 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 })
 
+/* eslint-disable react-refresh/only-export-components -- TanStack root modules export route configuration alongside the document shell. */
+/* eslint-disable react-dom/no-dangerously-set-innerhtml -- getThemeScript safely serializes inline script configuration. */
 function RootDocument({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -217,6 +226,8 @@ function RootDocument({ children }: { children: ReactNode }) {
     </html>
   )
 }
+/* eslint-enable react-dom/no-dangerously-set-innerhtml */
+/* eslint-enable react-refresh/only-export-components */
 ```
 
 请将文档外壳合并到已有根路由，保留原有元数据、样式、路由上下文和错误处理。脚本位于托管的 head 内容及 Hydration 脚本之前。参见 TanStack 的[文档 head 管理](https://tanstack.com/router/latest/docs/guide/document-head-management)。

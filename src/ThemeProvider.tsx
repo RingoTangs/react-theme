@@ -35,7 +35,7 @@ export function ThemeProvider({
   const resolvedTheme = theme === 'system' ? systemTheme : theme
 
   useEffect(() => {
-    // Restore preferences only after the deterministic hydration render.
+    // eslint-disable-next-line react/set-state-in-effect -- Restore browser preferences only after the deterministic hydration render.
     setState({
       theme: readStoredTheme(storageKey, defaultTheme),
       storageKey,
@@ -62,6 +62,7 @@ export function ThemeProvider({
   }, [storageKey, defaultTheme])
 
   useEffect(() => {
+    // eslint-disable-next-line react/set-state-in-effect -- Detect browser preferences after the shared server/client initial render.
     setSystemTheme(getSystemTheme())
     try {
       const media = window.matchMedia?.(SYSTEM_THEME_QUERY)
