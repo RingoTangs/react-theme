@@ -198,7 +198,14 @@ export default defineConfig({
 `getThemeScript()`、`ThemeProvider` 相同：`defaultTheme: 'system'`、
 `storageKey: 'theme'`、`darkClassName: 'dark'`。该子路径也导出 `ThemeScriptOptions` 类型。
 Vite 由应用提供；插件不在运行时导入 Vite 或 React，核心入口也不导入插件。
-集成已使用 Vite 8 验证。
+Vite peer 声明范围为 `^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0`，开发环境仍使用 Vite 8。
+
+`pnpm test:vite-compat` 构建并使用本地已安装的 Vite 验证真实 npm tarball，
+不会安装依赖。CI 对 Vite 5–8 的各主版本最低版本和最新补丁版本分别验证，覆盖
+ESM 导入、TypeScript 声明、开发环境 HTML 转换、生产构建，以及同步且不重复的脚本注入。
+实际通过的版本以矩阵结果为准，peer 声明范围不代表所有版本均已验证。
+本地 tarball 检查已通过 Vite 8.0.10、8.3.4，类型验证使用 TypeScript 5.9.3
+（`skipLibCheck: false`）；其他版本需要等待 CI 矩阵执行。
 
 插件在开发和生产模式下均通过 `head-prepend` 注入同步普通脚本，不带 `src`、
 `async`、`defer` 或 `type="module"`。插件保留 `id="react-theme-script"`；

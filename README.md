@@ -199,7 +199,18 @@ export default defineConfig({
 to `defaultTheme: 'system'`, `storageKey: 'theme'`, and `darkClassName: 'dark'`, just like `getThemeScript()`
 and `ThemeProvider`. The subpath also exports the `ThemeScriptOptions` type.
 Vite is provided by your application; the plugin has no runtime Vite or React
-imports, and the core entry does not import the plugin. Tested with Vite 8.
+imports, and the core entry does not import the plugin. The declared Vite peer
+range is `^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0`; the development environment
+remains on Vite 8.
+
+`pnpm test:vite-compat` builds and tests the real npm tarball with the locally
+installed Vite, without installing dependencies. CI tests both the minimum
+release and the latest patch release of each major (5–8), including ESM imports,
+TypeScript declarations, development HTML transforms, production builds, and
+synchronous, duplicate-free script injection. Consult the matrix results for
+verified versions; the peer range alone is not evidence that every version has
+passed. Local tarball checks passed with Vite 8.0.10 and 8.3.4 using TypeScript
+5.9.3 (`skipLibCheck: false`); other versions require the CI matrix to run.
 
 The plugin injects a synchronous classic script at `head-prepend` in development
 and production, without `src`, `async`, `defer`, or `type="module"`. It reserves

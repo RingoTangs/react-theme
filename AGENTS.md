@@ -18,6 +18,7 @@ Use pnpm with Node.js `22.23.2`. Generated packages support Node.js `>=22`.
 - `pnpm build`: creates minified CJS and ESM production bundles and declarations in `dist/`.
 - `pnpm test`: runs the React 19 Vitest suite once.
 - `pnpm test:react18`: builds the library, checks SPA Vite module resolution, and verifies the real npm tarball against the SPA's React 18 runtime and types; never installs dependencies.
+- `pnpm test:vite-compat`: builds and checks the real npm tarball against installed Vite; CI supplies isolated Vite 5–8 versions. Never installs dependencies locally.
 - `pnpm test:e2e`: builds the library and both apps, then tests the production React 18 SPA and React 19 Start in Chromium.
 - `pnpm lint`: runs ESLint over the repository.
 - `pnpm lint:fix`: applies safe ESLint fixes.

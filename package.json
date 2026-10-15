@@ -69,6 +69,7 @@
     "build": "cross-env NODE_ENV=production tsdown",
     "test": "vitest run",
     "test:react18": "pnpm build && node tests/compat/react18/verify.mjs",
+    "test:vite-compat": "pnpm build && node tests/compat/vite/verify.mjs",
     "test:e2e": "pnpm build && pnpm --filter @react-theme/react-spa build && pnpm --filter @react-theme/tanstack-start build && playwright test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -82,7 +83,7 @@
   },
   "peerDependencies": {
     "react": "^18.2.0 || ^19.0.0",
-    "vite": "^8.0.0"
+    "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0"
   },
   "peerDependenciesMeta": {
     "react": {
