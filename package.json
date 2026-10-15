@@ -73,6 +73,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "8.3.0",
+    "@playwright/test": "^1.56.1",
     "@prettier/plugin-xml": "^3.4.2",
     "@ringotangs/tsconfig": "^0.3.0",
     "@testing-library/dom": "^10.4.2",
