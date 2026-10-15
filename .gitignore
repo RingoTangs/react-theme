@@ -17,6 +17,10 @@ build
 coverage
 *.tsbuildinfo
 *.tgz
+.output
+.nitro
+.tanstack
+apps/tanstack-start/src/routeTree.gen.ts
 
 # Environment files
 .env

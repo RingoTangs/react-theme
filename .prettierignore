@@ -5,6 +5,10 @@
 **/.pnpm-store
 **/dist
 **/build
+**/.output
+**/.nitro
+**/.tanstack
+apps/tanstack-start/src/routeTree.gen.ts
 **/coverage
 **/pnpm-lock.yaml
 **/*.tsbuildinfo

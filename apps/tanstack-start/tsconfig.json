@@ -1,0 +1,8 @@
+{
+  "extends": "@ringotangs/tsconfig/react",
+  "compilerOptions": {
+    "types": ["vite/client", "node"],
+    "verbatimModuleSyntax": false
+  },
+  "include": ["src", "vite.config.ts"]
+}

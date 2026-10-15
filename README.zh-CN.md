@@ -253,6 +253,46 @@ pnpm build       # 生产 ESM/CJS 构建及类型声明
 pnpm pack:check  # 预览 npm 包内容
 ```
 
+## 集成测试应用
+
+`apps/react-spa` 是 Vite React SPA；`apps/tanstack-start` 使用 TanStack Start 和
+Nitro 提供真实 SSR。两个应用均为私有 Workspace 包，通过正式包入口引用库的
+`dist` 产物。每个应用的首屏脚本与 Provider 共用配置：
+`defaultTheme: 'system'`、`storageKey: 'theme'`。
+
+依赖已安装后，在仓库根目录依次执行：
+
+```sh
+# 启动或构建应用前，先构建库。
+pnpm build
+pnpm --filter @react-theme/react-spa build
+pnpm --filter @react-theme/tanstack-start build
+pnpm --filter @react-theme/react-spa typecheck
+pnpm --filter @react-theme/tanstack-start typecheck
+pnpm check
+```
+
+在不同终端启动开发服务器：
+
+```sh
+pnpm --filter @react-theme/react-spa dev --port 5173
+pnpm --filter @react-theme/tanstack-start dev --port 5174
+```
+
+构建后，在不同终端启动生产应用：
+
+```sh
+pnpm --filter @react-theme/react-spa preview --port 4173
+PORT=4174 pnpm --filter @react-theme/tanstack-start start
+```
+
+分别选择 Light、Dark、System 并刷新，检查偏好恢复；在 System 模式下改变浏览器或
+系统明暗偏好，检查实际主题与页面颜色。Start 的原始 HTTP 响应包含已渲染的页面及
+head 内联主题脚本；SPA 在开发和生产模式下均通过 Vite HTML hook 注入脚本。
+SSR 主题文本初始使用 Provider 默认值，Hydration 后恢复；head 脚本提前应用根元素样式。
+Start 在开发或构建时生成被忽略的路由树，因此首次类型检查前需先运行开发或构建。
+修改库后需重新构建根目录的库，应用不会直接读取库源码。
+
 ## 许可
 
 [MIT](./LICENSE)

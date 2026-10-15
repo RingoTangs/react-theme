@@ -1,0 +1,36 @@
+:root {
+  font-family: system-ui, sans-serif;
+  background: #fff;
+  color: #171717;
+}
+
+:root.dark {
+  background: #171717;
+  color: #fff;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: 36rem;
+  margin: 4rem auto;
+  padding: 0 1.5rem;
+}
+
+button {
+  margin: 0 0.5rem 0.5rem 0;
+  padding: 0.5rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+button[aria-pressed='true'] {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

@@ -253,6 +253,49 @@ pnpm build       # Production ESM/CJS bundles and declarations
 pnpm pack:check  # Preview npm package contents
 ```
 
+## Integration apps
+
+`apps/react-spa` is a Vite React SPA; `apps/tanstack-start` uses real SSR with
+TanStack Start and Nitro. Both private workspace apps import the library through
+its public package entry and built `dist` files. Their theme script and provider
+share `defaultTheme: 'system'` and `storageKey: 'theme'` within each app.
+
+Run these commands from the repository root, with dependencies already installed:
+
+```sh
+# Build the library before starting or building either app.
+pnpm build
+pnpm --filter @react-theme/react-spa build
+pnpm --filter @react-theme/tanstack-start build
+pnpm --filter @react-theme/react-spa typecheck
+pnpm --filter @react-theme/tanstack-start typecheck
+pnpm check
+```
+
+Start development servers in separate terminals:
+
+```sh
+pnpm --filter @react-theme/react-spa dev --port 5173
+pnpm --filter @react-theme/tanstack-start dev --port 5174
+```
+
+After building, run the production apps in separate terminals:
+
+```sh
+pnpm --filter @react-theme/react-spa preview --port 4173
+PORT=4174 pnpm --filter @react-theme/tanstack-start start
+```
+
+Choose Light, Dark, and System, then refresh to check persistence. In System mode,
+change the browser/OS color preference and check the resolved theme and page
+colors. Start's HTTP response contains the rendered page and the inline theme
+script in its document head. The SPA injects that script through Vite's HTML hook
+in both development and production. SSR theme text starts with the provider's
+default and updates after hydration; the head script applies root styling first.
+Start generates its ignored route tree during development/build, so run one of
+those before its first type check. Rebuild the root library after library changes;
+the apps do not import library source files.
+
 ## License
 
 [MIT](./LICENSE)
