@@ -4,24 +4,30 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@10.24.0",
-  "description": "A TypeScript npm library template powered by tsdown.",
+  "description": "Lightweight React theme management with system theme detection, persistence, and SSR support.",
   "author": "RingoTangs",
   "license": "MIT",
-  "homepage": "https://github.com/RingoTangs/tsdown-template#readme",
+  "homepage": "https://github.com/RingoTangs/react-theme#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RingoTangs/tsdown-template.git"
+    "url": "git+https://github.com/RingoTangs/react-theme.git"
   },
   "bugs": {
-    "url": "https://github.com/RingoTangs/tsdown-template/issues"
+    "url": "https://github.com/RingoTangs/react-theme/issues"
   },
   "keywords": [
-    "typescript",
-    "tsdown",
-    "npm-package",
-    "library",
-    "template"
+    "react",
+    "react-theme",
+    "theme",
+    "theme-management",
+    "dark-mode",
+    "system-theme",
+    "ssr",
+    "persistence"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "sideEffects": false,
   "exports": {
     ".": {
@@ -61,6 +67,9 @@
     "check:fix": "pnpm lint:fix && pnpm format:fix",
     "pack:check": "npm pack --dry-run",
     "prepublishOnly": "pnpm check && pnpm build && pnpm pack:check"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "8.3.0",
