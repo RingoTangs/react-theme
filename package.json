@@ -30,6 +30,16 @@
   },
   "sideEffects": false,
   "exports": {
+    "./vite": {
+      "import": {
+        "types": "./dist/vite.d.mts",
+        "default": "./dist/vite.mjs"
+      },
+      "require": {
+        "types": "./dist/vite.d.cts",
+        "default": "./dist/vite.cjs"
+      }
+    },
     ".": {
       "import": {
         "types": "./dist/index.d.mts",
@@ -94,6 +104,7 @@
     "react-dom": "catalog:",
     "tsdown": "^0.23.1",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vitest": "^4.1.11"
   }
 }

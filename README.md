@@ -157,7 +157,34 @@ createRoot(document.getElementById('root')!).render(
 )
 ```
 
-For the correct theme before the first paint, inject a synchronous inline script into the beginning of `<head>` during HTML transformation:
+For the correct theme before the first paint, use the Vite plugin with the same
+configuration as the provider:
+
+```ts
+// vite.config.ts
+import { reactTheme } from '@ringotangs/react-theme/vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+import { themeOptions } from './src/theme-options.ts'
+
+export default defineConfig({
+  plugins: [react(), reactTheme(themeOptions)],
+})
+```
+
+`reactTheme(options?: ThemeScriptOptions)` returns a Vite plugin. Options default
+to `defaultTheme: 'system'` and `storageKey: 'theme'`, just like `getThemeScript()`
+and `ThemeProvider`. The subpath also exports the `ThemeScriptOptions` type.
+Vite is provided by your application; the plugin has no runtime Vite or React
+imports, and the core entry does not import the plugin. Tested with Vite 8.
+
+The plugin injects a synchronous classic script at `head-prepend` in development
+and production, without `src`, `async`, `defer`, or `type="module"`. It reserves
+`id="react-theme-script"`; an existing marked script is left unchanged. Duplicate
+registrations and repeated HTML transformations keep the first injected
+configuration. Share one configuration with the provider.
+
+You can also inject `getThemeScript()` manually instead of using the plugin:
 
 ```ts
 import { getThemeScript } from '@ringotangs/react-theme'
@@ -185,7 +212,7 @@ export default defineConfig({
 })
 ```
 
-This uses Vite's [HTML transformation hook](https://vite.dev/guide/api-plugin#transformindexhtml) in development and production builds. Merge it into your existing configuration.
+Both approaches use Vite's [HTML transformation hook](https://vite.dev/guide/api-plugin#transformindexhtml) in development and production builds. Choose one approach; do not combine the plugin with an unmarked manual script.
 
 ## TanStack Start SSR
 

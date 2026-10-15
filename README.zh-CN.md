@@ -157,7 +157,32 @@ createRoot(document.getElementById('root')!).render(
 )
 ```
 
-为在首次绘制前应用正确主题，可在 HTML 转换阶段向 `<head>` 开头注入同步内联脚本：
+为在首次绘制前应用正确主题，推荐使用 Vite 插件，并传入与 Provider 相同的共享配置：
+
+```ts
+// vite.config.ts
+import { reactTheme } from '@ringotangs/react-theme/vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+import { themeOptions } from './src/theme-options.ts'
+
+export default defineConfig({
+  plugins: [react(), reactTheme(themeOptions)],
+})
+```
+
+`reactTheme(options?: ThemeScriptOptions)` 返回 Vite 插件，选项默认值与
+`getThemeScript()`、`ThemeProvider` 相同：`defaultTheme: 'system'`、
+`storageKey: 'theme'`。该子路径也导出 `ThemeScriptOptions` 类型。
+Vite 由应用提供；插件不在运行时导入 Vite 或 React，核心入口也不导入插件。
+集成已使用 Vite 8 验证。
+
+插件在开发和生产模式下均通过 `head-prepend` 注入同步普通脚本，不带 `src`、
+`async`、`defer` 或 `type="module"`。插件保留 `id="react-theme-script"`；
+如果 HTML 已包含带此标记的脚本，则保持原样。重复注册插件或重复转换 HTML 时，
+保留首个注入脚本的配置。请只使用一份与 Provider 共享的配置。
+
+也可继续手动调用 `getThemeScript()` 注入脚本，代替插件：
 
 ```ts
 import { getThemeScript } from '@ringotangs/react-theme'
@@ -185,7 +210,7 @@ export default defineConfig({
 })
 ```
 
-这里使用 Vite 的 [HTML 转换钩子](https://vite.dev/guide/api-plugin#transformindexhtml)，同时适用于开发和生产构建。请将其合并到已有配置中。
+两种方式均使用 Vite 的 [HTML 转换钩子](https://vite.dev/guide/api-plugin#transformindexhtml)，同时适用于开发和生产构建。请选择其中一种，不要将插件与未带标记的手动脚本同时使用。
 
 ## TanStack Start SSR
 

@@ -6,7 +6,7 @@ import pkg from './package.json' with { type: 'json' }
 const isProd = process.env.NODE_ENV === 'production'
 
 export default defineConfig({
-  entry: './src/index.ts',
+  entry: { index: './src/index.ts', vite: './src/vite.ts' },
   outDir: 'dist',
   tsconfig: './tsconfig.build.json',
   alias: {
@@ -15,6 +15,9 @@ export default defineConfig({
   clean: true,
   dts: true,
   format: ['cjs', 'esm'],
+  deps: {
+    neverBundle: [/^react(?:\/|$)/, /^vite(?:\/|$)/],
+  },
   banner: `/*! ${pkg.name} v${pkg.version} */`,
   minify: isProd,
 })
