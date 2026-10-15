@@ -278,6 +278,26 @@ pnpm build       # 生产 ESM/CJS 构建及类型声明
 pnpm pack:check  # 预览 npm 包内容
 ```
 
+### 依赖版本与打包
+
+`pnpm-workspace.yaml` 的默认 `catalog` 是第三方 `dependencies`、
+`devDependencies` 版本的唯一配置入口。各 Workspace 项目保留自己的依赖声明，
+使用 `catalog:`；内部依赖保留 `workspace:*`。库的 React peer 范围保持
+`^19.0.0`，与开发环境的 React 版本独立。迁移条目时保留原有版本范围。
+修改声明后，在仓库根目录手动执行 `pnpm install --lockfile-only`，
+并检查锁文件是否出现非预期升级。
+
+根据 pnpm 的 [Catalog 发布说明](https://pnpm.io/catalogs#publishing)，
+pnpm 会在打包或发布时展开 `catalog:`。当前 `pack:check` 使用
+`npm pack --dry-run`，现有发布工作流使用 `npm publish`，不能假设它们执行了
+pnpm 的协议转换。文件列表预览成功不代表打包 manifest 已正确转换，发布前需检查实际
+tarball 内的 `package.json`。本地实际打包验证中，`npm pack` 保留了全部 23 项
+开发依赖的 `catalog:`，`pnpm pack` 则全部展开为原版本范围；两者均保留了
+React peer 范围及核心、Vite 子入口。当前库的 Catalog 引用只位于开发依赖，registry
+消费者通常不会安装这些依赖；这与运行时依赖或 peer 依赖含未展开协议的风险不同。
+若未来这些字段使用 Catalog，须保证发布产物中已转换为标准版本范围。
+本仓库继续保留 `private: true`，直到单独准备发布。
+
 ## 集成测试应用
 
 `apps/react-spa` 是 Vite React SPA；`apps/tanstack-start` 使用 TanStack Start 和

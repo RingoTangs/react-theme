@@ -280,6 +280,30 @@ pnpm build       # Production ESM/CJS bundles and declarations
 pnpm pack:check  # Preview npm package contents
 ```
 
+### Dependency versions and packaging
+
+The default `catalog` in `pnpm-workspace.yaml` is the single source for third-party
+`dependencies` and `devDependencies` versions. Each workspace package keeps its
+own dependency declarations using `catalog:`; internal dependencies keep
+`workspace:*`. The library's React peer range stays `^19.0.0`, independently of
+the development React version. Preserve version ranges when moving entries.
+After changing declarations, update the lockfile manually from the repository
+root with `pnpm install --lockfile-only` and review it for unintended upgrades.
+
+pnpm expands `catalog:` when packing or publishing, as described in its
+[Catalog documentation](https://pnpm.io/catalogs#publishing). The current
+`pack:check` script uses `npm pack --dry-run`, and the unchanged release workflow
+uses `npm publish`; do not assume they perform pnpm's protocol conversion. A
+successful file-list preview does not verify the packed manifest. Inspect the
+actual tarball's `package.json` before releasing. In the verified local tarballs,
+`npm pack` retained all 23 development dependency `catalog:` references, while
+`pnpm pack` expanded them to their original version ranges. Both retained the
+React peer range and the core/Vite entry points. Catalog references currently
+appear only in this library's development dependencies, which registry consumers
+normally do not install; this differs from unresolved runtime or peer dependency
+protocols. If those fields later use Catalog, ensure the release artifact contains
+standard dependency ranges. `private: true` remains until release preparation.
+
 ## Integration apps
 
 `apps/react-spa` is a Vite React SPA; `apps/tanstack-start` uses real SSR with
