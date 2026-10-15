@@ -135,9 +135,9 @@ Public types include `ThemeMode`, `ResolvedTheme`, `ThemeProviderProps`, `ThemeC
 In an existing Vite React app, use the shared configuration above. Mount the provider in `src/main.tsx` (the `App` imported here should contain your UI without another provider):
 
 ```tsx
+import { ThemeProvider } from '@ringotangs/react-theme'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ThemeProvider } from '@ringotangs/react-theme'
 import App from './App'
 import { themeOptions } from './theme-options'
 
@@ -153,10 +153,10 @@ createRoot(document.getElementById('root')!).render(
 For the correct theme before the first paint, inject a synchronous inline script into the beginning of `<head>` during HTML transformation:
 
 ```ts
+import { getThemeScript } from '@ringotangs/react-theme'
+import react from '@vitejs/plugin-react'
 // vite.config.ts
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { getThemeScript } from '@ringotangs/react-theme'
 import { themeOptions } from './src/theme-options'
 
 export default defineConfig({
@@ -187,13 +187,13 @@ In a TanStack Start app, use the shared `src/theme-options.ts` above and place t
 ```tsx
 // src/routes/__root.tsx
 import type { ReactNode } from 'react'
+import { getThemeScript, ThemeProvider } from '@ringotangs/react-theme'
 import {
   createRootRoute,
   HeadContent,
   Outlet,
   Scripts,
 } from '@tanstack/react-router'
-import { getThemeScript, ThemeProvider } from '@ringotangs/react-theme'
 import { themeOptions } from '../theme-options'
 
 export const Route = createRootRoute({

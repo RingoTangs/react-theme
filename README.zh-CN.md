@@ -135,9 +135,9 @@ export const themeOptions = {
 在已有 Vite React 应用中使用上述共享配置。在 `src/main.tsx` 挂载 Provider（此处导入的 `App` 只包含应用 UI，不再包裹另一层 Provider）：
 
 ```tsx
+import { ThemeProvider } from '@ringotangs/react-theme'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ThemeProvider } from '@ringotangs/react-theme'
 import App from './App'
 import { themeOptions } from './theme-options'
 
@@ -153,10 +153,10 @@ createRoot(document.getElementById('root')!).render(
 为在首次绘制前应用正确主题，可在 HTML 转换阶段向 `<head>` 开头注入同步内联脚本：
 
 ```ts
+import { getThemeScript } from '@ringotangs/react-theme'
+import react from '@vitejs/plugin-react'
 // vite.config.ts
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { getThemeScript } from '@ringotangs/react-theme'
 import { themeOptions } from './src/theme-options'
 
 export default defineConfig({
@@ -187,13 +187,13 @@ export default defineConfig({
 ```tsx
 // src/routes/__root.tsx
 import type { ReactNode } from 'react'
+import { getThemeScript, ThemeProvider } from '@ringotangs/react-theme'
 import {
   createRootRoute,
   HeadContent,
   Outlet,
   Scripts,
 } from '@tanstack/react-router'
-import { getThemeScript, ThemeProvider } from '@ringotangs/react-theme'
 import { themeOptions } from '../theme-options'
 
 export const Route = createRootRoute({
