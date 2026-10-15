@@ -1,6 +1,7 @@
+import type { ThemeTestOptions } from './tests/e2e/theme.fixture'
 import { defineConfig, devices } from '@playwright/test'
 
-export default defineConfig({
+export default defineConfig<ThemeTestOptions>({
   testDir: './tests/e2e',
   fullyParallel: true,
   workers: 2,
@@ -16,12 +17,12 @@ export default defineConfig({
     {
       name: 'react-spa-chromium',
       testMatch: 'theme.spec.ts',
-      use: { baseURL: 'http://127.0.0.1:4173' },
+      use: { baseURL: 'http://127.0.0.1:4173', darkClassName: 'theme-dark' },
     },
     {
       name: 'tanstack-start-chromium',
       testMatch: ['theme.spec.ts', 'ssr.spec.ts'],
-      use: { baseURL: 'http://127.0.0.1:4174' },
+      use: { baseURL: 'http://127.0.0.1:4174', darkClassName: 'dark' },
     },
   ],
   webServer: [

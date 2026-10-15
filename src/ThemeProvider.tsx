@@ -1,6 +1,7 @@
 import type { ReactElement, ReactNode } from 'react'
 import type { ResolvedTheme, ThemeMode } from './theme'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { DEFAULT_DARK_CLASS_NAME, validateDarkClassName } from './darkClassName'
 import {
   getSystemTheme,
   isThemeMode,
@@ -15,13 +16,17 @@ export interface ThemeProviderProps {
   children?: ReactNode
   defaultTheme?: ThemeMode
   storageKey?: string
+  darkClassName?: string
 }
 
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
   storageKey = THEME_STORAGE_KEY,
+  darkClassName = DEFAULT_DARK_CLASS_NAME,
 }: ThemeProviderProps): ReactElement {
+  validateDarkClassName(darkClassName)
+  const previousDarkClassNameRef = useRef(darkClassName)
   const [state, setState] = useState(() => ({
     theme: defaultTheme,
     storageKey,
@@ -84,9 +89,14 @@ export function ThemeProvider({
 
   useEffect(() => {
     if (!current || !state.initialized) return
-    document.documentElement.classList.toggle('dark', resolvedTheme === 'dark')
-    document.documentElement.style.colorScheme = resolvedTheme
-  }, [current, state.initialized, resolvedTheme])
+    const root = document.documentElement
+    if (previousDarkClassNameRef.current !== darkClassName) {
+      root.classList.remove(previousDarkClassNameRef.current)
+    }
+    root.classList.toggle(darkClassName, resolvedTheme === 'dark')
+    root.style.colorScheme = resolvedTheme
+    previousDarkClassNameRef.current = darkClassName
+  }, [current, state.initialized, resolvedTheme, darkClassName])
 
   const setTheme = useCallback(
     (nextTheme: ThemeMode) => {

@@ -64,7 +64,7 @@ export default function App() {
 }
 ```
 
-The provider toggles the `dark` class on `document.documentElement` and sets its `style.colorScheme` to `light` or `dark`. It preserves other classes and styles. Supply your own application colors, for example:
+By default, the provider toggles the `dark` class on `document.documentElement` and sets its `style.colorScheme` to `light` or `dark`. It preserves other classes and styles. Supply your own application colors, for example:
 
 ```css
 :root {
@@ -84,14 +84,24 @@ The provider toggles the `dark` class on `document.documentElement` and sets its
 
 Accepts `children` and these optional properties:
 
-| Property       | Type                            | Default    |
-| -------------- | ------------------------------- | ---------- |
-| `defaultTheme` | `'light' \| 'dark' \| 'system'` | `'system'` |
-| `storageKey`   | `string`                        | `'theme'`  |
+| Property        | Type                            | Default    |
+| --------------- | ------------------------------- | ---------- |
+| `defaultTheme`  | `'light' \| 'dark' \| 'system'` | `'system'` |
+| `storageKey`    | `string`                        | `'theme'`  |
+| `darkClassName` | `string`                        | `'dark'`   |
 
 A valid saved mode takes priority over `defaultTheme`, including a saved `system` value. Missing, invalid, or inaccessible storage falls back to `defaultTheme`. If the selected mode is `system`, the OS preference determines the resolved theme; unavailable or failing detection falls back to `light`.
 
 Calling `setTheme` updates the theme and attempts to save it. Initialization, system preference changes, and cross-tab synchronization do not write to storage. Storage failures do not prevent in-memory switching. Changes to the configured key or default reload the preference for that configuration. Cross-tab removal, clearing, or an invalid value falls back to `defaultTheme`.
+
+Set `darkClassName` to a single non-empty class token to customize root styling.
+Changing it removes the previously managed class and applies the new one using
+the current resolved theme, without resetting or writing preferences. Other
+classes and styles are preserved; unmounting retains the existing root styling.
+An empty string, any whitespace (including Unicode whitespace), or a non-string
+value throws `TypeError: darkClassName must be a non-empty string without whitespace`
+during provider rendering or script generation. Values are not trimmed. Omitted
+or `undefined` values use `'dark'`. Choose a CSS-friendly name such as `theme-dark`.
 
 ### useTheme
 
@@ -121,9 +131,9 @@ const script = getThemeScript({
 })
 ```
 
-Returns standalone JavaScript without `<script>` tags. Both options are optional and use the same defaults as `ThemeProvider`. Generation is safe on the server. The generated script reads browser preferences and applies the root class and color scheme without writing storage or registering listeners. Configuration is safely serialized for inline script placement.
+Returns standalone JavaScript without `<script>` tags. All options are optional and use the same defaults as `ThemeProvider`. Generation is safe on the server. The generated script reads browser preferences and applies the root class and color scheme without writing storage or registering listeners. Configuration is safely serialized for inline script placement.
 
-**Use the same `defaultTheme` and `storageKey` for the script and provider.** Share a configuration module when customizing them:
+**Use the same `defaultTheme`, `storageKey`, and `darkClassName` for the script and provider (or Vite plugin).** Share a configuration module when customizing them:
 
 ```ts
 // src/theme-options.ts
@@ -132,8 +142,21 @@ import type { ThemeScriptOptions } from '@ringotangs/react-theme'
 export const themeOptions = {
   defaultTheme: 'system',
   storageKey: 'app-theme',
+  darkClassName: 'theme-dark',
 } satisfies ThemeScriptOptions
 ```
+
+The shared custom configuration above needs corresponding application CSS:
+
+```css
+:root.theme-dark {
+  background: #171717;
+  color: white;
+}
+```
+
+The provider and initialization script manage only the configured class. With a
+custom name, an existing `dark` class is treated as unrelated and preserved.
 
 Public types include `ThemeMode`, `ResolvedTheme`, `ThemeProviderProps`, `ThemeContextValue`, and `ThemeScriptOptions`. The package also exports `themeModes`, `THEME_STORAGE_KEY`, `SYSTEM_THEME_QUERY`, `isThemeMode`, `getSystemTheme`, `readStoredTheme(storageKey?, fallback?)`, and `persistTheme(theme, storageKey?)`. The core storage reader defaults to the key `theme` and fallback `system`; core helpers do not apply DOM styles.
 
@@ -173,7 +196,7 @@ export default defineConfig({
 ```
 
 `reactTheme(options?: ThemeScriptOptions)` returns a Vite plugin. Options default
-to `defaultTheme: 'system'` and `storageKey: 'theme'`, just like `getThemeScript()`
+to `defaultTheme: 'system'`, `storageKey: 'theme'`, and `darkClassName: 'dark'`, just like `getThemeScript()`
 and `ThemeProvider`. The subpath also exports the `ThemeScriptOptions` type.
 Vite is provided by your application; the plugin has no runtime Vite or React
 imports, and the core entry does not import the plugin. Tested with Vite 8.
@@ -309,7 +332,9 @@ standard dependency ranges. `private: true` remains until release preparation.
 `apps/react-spa` is a Vite React SPA; `apps/tanstack-start` uses real SSR with
 TanStack Start and Nitro. Both private workspace apps import the library through
 its public package entry and built `dist` files. Their theme script and provider
-share `defaultTheme: 'system'` and `storageKey: 'theme'` within each app.
+share `defaultTheme: 'system'` and `storageKey: 'theme'` within each app. The SPA
+uses `darkClassName: 'theme-dark'` with matching CSS; Start omits the option and
+continues to use the default `dark` class.
 
 Run these commands from the repository root, with dependencies already installed:
 

@@ -10,7 +10,11 @@ import { reactTheme } from './vite'
 
 const html =
   '<!doctype html><html><head><title>Theme</title></head><body></body></html>'
-const options = { defaultTheme: 'dark', storageKey: 'spa-theme' } as const
+const options = {
+  defaultTheme: 'dark',
+  storageKey: 'spa-theme',
+  darkClassName: 'theme-dark',
+} as const
 const roots: string[] = []
 
 afterEach(async () => {
@@ -61,7 +65,11 @@ describe('reactTheme', () => {
   })
 
   it('forwards theme options including safely serialized storage keys', async () => {
-    const custom = { defaultTheme: 'light', storageKey: '</script>"&' } as const
+    const custom = {
+      defaultTheme: 'light',
+      storageKey: '</script>"&',
+      darkClassName: 'theme"<>&',
+    } as const
     expect(await transform(reactTheme(custom))).toEqual([
       {
         tag: 'script',

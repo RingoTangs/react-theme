@@ -4,7 +4,7 @@
   color: #171717;
 }
 
-:root.dark {
+:root.theme-dark {
   background: #171717;
   color: #fff;
 }

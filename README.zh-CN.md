@@ -64,7 +64,7 @@ export default function App() {
 }
 ```
 
-Provider 切换 `document.documentElement` 的 `dark` class，并将其 `style.colorScheme` 设为 `light` 或 `dark`，保留其他 class 和样式。应用需要自行提供配色，例如：
+Provider 默认切换 `document.documentElement` 的 `dark` class，并将其 `style.colorScheme` 设为 `light` 或 `dark`，保留其他 class 和样式。应用需要自行提供配色，例如：
 
 ```css
 :root {
@@ -84,14 +84,24 @@ Provider 切换 `document.documentElement` 的 `dark` class，并将其 `style.c
 
 接受 `children` 和以下可选属性：
 
-| 属性           | 类型                            | 默认值     |
-| -------------- | ------------------------------- | ---------- |
-| `defaultTheme` | `'light' \| 'dark' \| 'system'` | `'system'` |
-| `storageKey`   | `string`                        | `'theme'`  |
+| 属性            | 类型                            | 默认值     |
+| --------------- | ------------------------------- | ---------- |
+| `defaultTheme`  | `'light' \| 'dark' \| 'system'` | `'system'` |
+| `storageKey`    | `string`                        | `'theme'`  |
+| `darkClassName` | `string`                        | `'dark'`   |
 
 合法的已保存模式优先于 `defaultTheme`，包括已保存的 `system`。存储缺失、无效或不可访问时使用 `defaultTheme`。选中 `system` 时由操作系统偏好决定实际主题；检测不可用或失败时回退为 `light`。
 
 调用 `setTheme` 会更新主题并尝试保存。初始化、系统偏好变化和跨标签页同步不会写入存储。存储失败不影响当前页面切换主题。修改存储键或默认值会重新读取对应配置的偏好。其他标签页删除、清空存储或写入无效值时，回退到 `defaultTheme`。
+
+`darkClassName` 可配置为单个非空 class token。动态修改时，Provider 清理此前管理的
+类名，并根据当前实际主题应用新类名，不重置或写入偏好。其他 class 和样式保持不变；
+卸载时沿用原有行为，保留根元素样式。
+空字符串、包含任何空白（包括 Unicode 空白）或运行时非字符串值，均会在 Provider
+渲染或脚本生成时抛出明确错误：
+`TypeError: darkClassName must be a non-empty string without whitespace`。
+不会自动修剪；省略或传入 `undefined` 时使用 `'dark'`。建议使用便于编写 CSS 的名称，
+例如 `theme-dark`。
 
 ### useTheme
 
@@ -121,9 +131,9 @@ const script = getThemeScript({
 })
 ```
 
-返回独立执行的 JavaScript，不包含 `<script>` 标签。两个选项均可省略，默认值与 `ThemeProvider` 相同。生成函数可安全地在服务端调用。生成的脚本读取浏览器偏好并应用根元素 class 和配色方案，不写入存储，也不注册监听器。配置经过适用于内联脚本的安全序列化。
+返回独立执行的 JavaScript，不包含 `<script>` 标签。所有选项均可省略，默认值与 `ThemeProvider` 相同。生成函数可安全地在服务端调用。生成的脚本读取浏览器偏好并应用根元素 class 和配色方案，不写入存储，也不注册监听器。配置经过适用于内联脚本的安全序列化。
 
-**脚本与 Provider 必须使用相同的 `defaultTheme` 和 `storageKey`。** 自定义时可共享配置模块：
+**脚本（或 Vite 插件）与 Provider 必须使用相同的 `defaultTheme`、`storageKey` 和 `darkClassName`。** 自定义时可共享配置模块：
 
 ```ts
 // src/theme-options.ts
@@ -132,8 +142,21 @@ import type { ThemeScriptOptions } from '@ringotangs/react-theme'
 export const themeOptions = {
   defaultTheme: 'system',
   storageKey: 'app-theme',
+  darkClassName: 'theme-dark',
 } satisfies ThemeScriptOptions
 ```
+
+上述自定义共享配置需要配套应用 CSS：
+
+```css
+:root.theme-dark {
+  background: #171717;
+  color: white;
+}
+```
+
+Provider 与首屏脚本只管理配置的类名。使用自定义名称后，已有的 `dark` class
+视为无关类名并保留。
 
 公共类型包括 `ThemeMode`、`ResolvedTheme`、`ThemeProviderProps`、`ThemeContextValue` 和 `ThemeScriptOptions`。此外还导出 `themeModes`、`THEME_STORAGE_KEY`、`SYSTEM_THEME_QUERY`、`isThemeMode`、`getSystemTheme`、`readStoredTheme(storageKey?, fallback?)` 和 `persistTheme(theme, storageKey?)`。核心读取函数默认使用存储键 `theme` 和回退模式 `system`；核心工具函数不操作 DOM 样式。
 
@@ -173,7 +196,7 @@ export default defineConfig({
 
 `reactTheme(options?: ThemeScriptOptions)` 返回 Vite 插件，选项默认值与
 `getThemeScript()`、`ThemeProvider` 相同：`defaultTheme: 'system'`、
-`storageKey: 'theme'`。该子路径也导出 `ThemeScriptOptions` 类型。
+`storageKey: 'theme'`、`darkClassName: 'dark'`。该子路径也导出 `ThemeScriptOptions` 类型。
 Vite 由应用提供；插件不在运行时导入 Vite 或 React，核心入口也不导入插件。
 集成已使用 Vite 8 验证。
 
@@ -303,7 +326,8 @@ React peer 范围及核心、Vite 子入口。当前库的 Catalog 引用只位�
 `apps/react-spa` 是 Vite React SPA；`apps/tanstack-start` 使用 TanStack Start 和
 Nitro 提供真实 SSR。两个应用均为私有 Workspace 包，通过正式包入口引用库的
 `dist` 产物。每个应用的首屏脚本与 Provider 共用配置：
-`defaultTheme: 'system'`、`storageKey: 'theme'`。
+`defaultTheme: 'system'`、`storageKey: 'theme'`。SPA 显式使用
+`darkClassName: 'theme-dark'` 及对应 CSS；Start 省略该选项，继续使用默认 `dark` 类名。
 
 依赖已安装后，在仓库根目录依次执行：
 

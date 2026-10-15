@@ -1,9 +1,11 @@
 import type { ThemeMode } from './theme'
+import { DEFAULT_DARK_CLASS_NAME, validateDarkClassName } from './darkClassName'
 import { SYSTEM_THEME_QUERY, THEME_STORAGE_KEY, themeModes } from './theme'
 
 export interface ThemeScriptOptions {
   defaultTheme?: ThemeMode
   storageKey?: string
+  darkClassName?: string
 }
 
 function serialize(value: string | readonly string[]): string {
@@ -18,7 +20,9 @@ function serialize(value: string | readonly string[]): string {
 export function getThemeScript({
   defaultTheme = 'system',
   storageKey = THEME_STORAGE_KEY,
+  darkClassName = DEFAULT_DARK_CLASS_NAME,
 }: ThemeScriptOptions = {}): string {
+  validateDarkClassName(darkClassName)
   return `(() => {
   let theme = ${serialize(defaultTheme)};
   try {
@@ -32,7 +36,7 @@ export function getThemeScript({
         !!window.matchMedia(${serialize(SYSTEM_THEME_QUERY)}).matches;
     } catch {}
   }
-  document.documentElement.classList.toggle('dark', dark);
+  document.documentElement.classList.toggle(${serialize(darkClassName)}, dark);
   document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
 })();`
 }

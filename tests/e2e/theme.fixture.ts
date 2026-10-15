@@ -4,8 +4,14 @@ import { test as base, expect } from '@playwright/test'
 export type ThemeMode = 'light' | 'dark' | 'system'
 export type ResolvedTheme = 'light' | 'dark'
 
-export const test = base.extend<{ storedTheme: ThemeMode | null }>({
+export interface ThemeTestOptions {
+  storedTheme: ThemeMode | null
+  darkClassName: string
+}
+
+export const test = base.extend<ThemeTestOptions>({
   storedTheme: ['dark', { option: true }],
+  darkClassName: ['dark', { option: true }],
   storageState: async ({ baseURL, storedTheme }, provide) => {
     if (!baseURL) throw new Error('An application baseURL is required')
     await provide({
@@ -35,13 +41,14 @@ export async function expectTheme(
   page: Page,
   mode: ThemeMode,
   resolved: ResolvedTheme,
+  darkClassName = 'dark',
 ): Promise<void> {
   await expect(themeButton(page, mode)).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByText(`Theme: ${mode}`, { exact: true })).toBeVisible()
   await expect(
     page.getByText(`Resolved theme: ${resolved}`, { exact: true }),
   ).toBeVisible()
-  await expectRootTheme(page, resolved)
+  await expectRootTheme(page, resolved, darkClassName)
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('theme')))
     .toBe(mode)
@@ -50,10 +57,26 @@ export async function expectTheme(
 export async function expectRootTheme(
   page: Page,
   resolved: ResolvedTheme,
+  darkClassName = 'dark',
 ): Promise<void> {
   const html = page.locator('html')
-  if (resolved === 'dark') await expect(html).toHaveClass(/\bdark\b/)
-  else await expect(html).not.toHaveClass(/\bdark\b/)
+  await expect
+    .poll(() =>
+      html.evaluate(
+        (element, name) => element.classList.contains(name),
+        darkClassName,
+      ),
+    )
+    .toBe(resolved === 'dark')
+  const otherClass = darkClassName === 'dark' ? 'theme-dark' : 'dark'
+  await expect
+    .poll(() =>
+      html.evaluate(
+        (element, name) => element.classList.contains(name),
+        otherClass,
+      ),
+    )
+    .toBe(false)
   await expect
     .poll(() => html.evaluate((element) => element.style.colorScheme))
     .toBe(resolved)
@@ -63,8 +86,11 @@ export async function expectRootTheme(
   )
 }
 
-export async function openApp(page: Page): Promise<void> {
+export async function openApp(
+  page: Page,
+  darkClassName = 'dark',
+): Promise<void> {
   await page.goto('/')
   // Saved Dark differs from the SSR default, so this also waits for hydration.
-  await expectTheme(page, 'dark', 'dark')
+  await expectTheme(page, 'dark', 'dark', darkClassName)
 }

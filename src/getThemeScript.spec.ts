@@ -23,6 +23,77 @@ function expectTheme(dark: boolean): void {
 }
 
 describe('getThemeScript', () => {
+  it.each(themeModes)(
+    'applies a custom class for %s without modifying other classes',
+    (defaultTheme) => {
+      vi.stubGlobal('matchMedia', () => ({ matches: true }))
+      runInNewContext(
+        getThemeScript({ defaultTheme, darkClassName: 'theme-dark' }),
+        { window, document },
+      )
+      expect(document.documentElement.classList.contains('theme-dark')).toBe(
+        defaultTheme !== 'light',
+      )
+      expect(document.documentElement).toHaveClass('existing', 'dark')
+      expect(document.documentElement.style.colorScheme).toBe(
+        defaultTheme === 'light' ? 'light' : 'dark',
+      )
+    },
+  )
+
+  it.each([
+    'theme-dark',
+    'theme"\'\\<>&',
+    '</script><script>globalThis.injected=true</script>',
+  ])('safely serializes the original class token %j', (darkClassName) => {
+    const context = { window, document, injected: false }
+    const script = getThemeScript({ defaultTheme: 'dark', darkClassName })
+    expect(script).not.toContain('<')
+    runInNewContext(script, context)
+    expect(document.documentElement.classList.contains(darkClassName)).toBe(
+      true,
+    )
+    expect(document.documentElement).toHaveClass('existing', 'dark')
+    expect(context.injected).toBe(false)
+    const head = document.createElement('head')
+    head.innerHTML = `<script>${script}</script>`
+    expect(head.children).toHaveLength(1)
+    expect(head.firstElementChild?.textContent).toBe(script)
+    runInNewContext(
+      getThemeScript({ defaultTheme: 'light', darkClassName }),
+      context,
+    )
+    expect(document.documentElement.classList.contains(darkClassName)).toBe(
+      false,
+    )
+    expect(document.documentElement).toHaveClass('existing', 'dark')
+  })
+
+  it.each([
+    '',
+    ' ',
+    ' leading',
+    'trailing ',
+    'two classes',
+    'a\tb',
+    'a\nb',
+    'a\rb',
+    'a\fb',
+    '\u00A0',
+    '\u2028',
+    '\u2029',
+    null,
+    42,
+  ])('rejects invalid darkClassName %j at generation time', (darkClassName) => {
+    expect(() =>
+      getThemeScript({ darkClassName: darkClassName as string }),
+    ).toThrowError(
+      new TypeError(
+        'darkClassName must be a non-empty string without whitespace',
+      ),
+    )
+  })
+
   for (const defaultTheme of themeModes) {
     for (const stored of [null, 'invalid', ...themeModes]) {
       it.each([false, true])(

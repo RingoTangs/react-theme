@@ -8,47 +8,57 @@ import {
 } from './theme.fixture'
 
 for (const mode of ['light', 'dark', 'system'] as const) {
-  test(`${mode} selection persists across reload`, async ({ page }) => {
-    await openApp(page)
+  test(`${mode} selection persists across reload`, async ({
+    page,
+    darkClassName,
+  }) => {
+    await openApp(page, darkClassName)
     await themeButton(page, mode).click()
     const resolved = mode === 'dark' ? 'dark' : 'light'
-    await expectTheme(page, mode, resolved)
+    await expectTheme(page, mode, resolved, darkClassName)
     await page.reload()
-    await expectTheme(page, mode, resolved)
+    await expectTheme(page, mode, resolved, darkClassName)
     if (mode !== 'system') {
       await page.emulateMedia({
         colorScheme: resolved === 'dark' ? 'light' : 'dark',
       })
-      await expectTheme(page, mode, resolved)
+      await expectTheme(page, mode, resolved, darkClassName)
     }
   })
 }
 
-test('System follows changes to the system color scheme', async ({ page }) => {
-  await openApp(page)
+test('System follows changes to the system color scheme', async ({
+  page,
+  darkClassName,
+}) => {
+  await openApp(page, darkClassName)
   await themeButton(page, 'system').click()
-  await expectTheme(page, 'system', 'light')
+  await expectTheme(page, 'system', 'light', darkClassName)
   await page.emulateMedia({ colorScheme: 'dark' })
-  await expectTheme(page, 'system', 'dark')
+  await expectTheme(page, 'system', 'dark', darkClassName)
   await page.reload()
-  await expectTheme(page, 'system', 'dark')
+  await expectTheme(page, 'system', 'dark', darkClassName)
   await page.emulateMedia({ colorScheme: 'light' })
-  await expectTheme(page, 'system', 'light')
+  await expectTheme(page, 'system', 'light', darkClassName)
 })
 
-test('theme changes synchronize between tabs', async ({ page, context }) => {
-  await openApp(page)
+test('theme changes synchronize between tabs', async ({
+  page,
+  context,
+  darkClassName,
+}) => {
+  await openApp(page, darkClassName)
   const other = await context.newPage()
-  await openApp(other)
+  await openApp(other, darkClassName)
   await themeButton(page, 'light').click()
-  await expectTheme(page, 'light', 'light')
-  await expectTheme(other, 'light', 'light')
+  await expectTheme(page, 'light', 'light', darkClassName)
+  await expectTheme(other, 'light', 'light', darkClassName)
   await themeButton(other, 'dark').click()
-  await expectTheme(other, 'dark', 'dark')
-  await expectTheme(page, 'dark', 'dark')
+  await expectTheme(other, 'dark', 'dark', darkClassName)
+  await expectTheme(page, 'dark', 'dark', darkClassName)
   await themeButton(page, 'system').click()
-  await expectTheme(page, 'system', 'light')
-  await expectTheme(other, 'system', 'light')
+  await expectTheme(page, 'system', 'light', darkClassName)
+  await expectTheme(other, 'system', 'light', darkClassName)
 })
 
 for (const scenario of [
@@ -62,6 +72,7 @@ for (const scenario of [
 
     test('the head script applies the theme without client modules', async ({
       page,
+      darkClassName,
     }) => {
       const blockedScripts: string[] = []
       await page.route('**/*', async (route) => {
@@ -89,7 +100,7 @@ for (const scenario of [
             ),
         )
       expect(scripts).toEqual([[null, null, null, null]])
-      await expectRootTheme(page, scenario.resolved)
+      await expectRootTheme(page, scenario.resolved, darkClassName)
       expect(await page.evaluate(() => localStorage.getItem('theme'))).toBe(
         scenario.stored,
       )

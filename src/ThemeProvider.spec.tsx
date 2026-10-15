@@ -106,6 +106,91 @@ afterEach(() => {
 })
 
 describe('theme provider', () => {
+  it('uses only the custom class while switching themes and preserves unrelated classes', () => {
+    const system = media(true)
+    document.documentElement.classList.add('dark')
+    render(app({ darkClassName: 'theme-dark' }))
+    expect(document.documentElement).toHaveClass(
+      'existing',
+      'dark',
+      'theme-dark',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'light' }))
+    expect(document.documentElement).not.toHaveClass('theme-dark')
+    expect(document.documentElement).toHaveClass('existing', 'dark')
+    expect(document.documentElement.style.colorScheme).toBe('light')
+    fireEvent.click(screen.getByRole('button', { name: 'dark' }))
+    expect(document.documentElement).toHaveClass('theme-dark')
+    fireEvent.click(screen.getByRole('button', { name: 'system' }))
+    system.change(false)
+    expect(document.documentElement).not.toHaveClass('theme-dark')
+    expect(document.documentElement).toHaveClass('existing', 'dark')
+    expect(screen.getByRole('status')).toHaveTextContent('system/light')
+  })
+
+  it.each(['light', 'dark', 'system'] as ThemeMode[])(
+    'renames only its managed class without resetting saved %s mode',
+    (mode) => {
+      media(true)
+      window.localStorage.setItem('theme', mode)
+      const write = vi.spyOn(Storage.prototype, 'setItem')
+      const view = render(app({ darkClassName: 'first-dark' }))
+      const resolved = mode === 'light' ? 'light' : 'dark'
+      for (const darkClassName of ['second-dark', 'third-dark', undefined]) {
+        view.rerender(app({ darkClassName }))
+        const expected = darkClassName ?? 'dark'
+        for (const name of [
+          'first-dark',
+          'second-dark',
+          'third-dark',
+          'dark',
+        ]) {
+          expect(document.documentElement.classList.contains(name)).toBe(
+            name === expected && resolved === 'dark',
+          )
+        }
+        expect(document.documentElement).toHaveClass('existing')
+        expect(document.documentElement.style.colorScheme).toBe(resolved)
+        expect(screen.getByRole('status')).toHaveTextContent(
+          `${mode}/${resolved}`,
+        )
+        expect(window.localStorage.getItem('theme')).toBe(mode)
+      }
+      expect(write).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each([
+    '',
+    ' ',
+    ' leading',
+    'trailing ',
+    'two classes',
+    'a\tb',
+    'a\nb',
+    'a\rb',
+    'a\fb',
+    '\u00A0',
+    '\u2028',
+    '\u2029',
+    null,
+    42,
+  ])(
+    'rejects invalid darkClassName %j before touching the DOM',
+    (darkClassName) => {
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      expect(() =>
+        render(app({ darkClassName: darkClassName as string })),
+      ).toThrowError(
+        new TypeError(
+          'darkClassName must be a non-empty string without whitespace',
+        ),
+      )
+      expect(document.documentElement.className).toBe('existing')
+      expect(document.documentElement.style.colorScheme).toBe('')
+    },
+  )
+
   it('defaults to system and applies the system theme without writing storage', () => {
     media(true)
     const write = vi.spyOn(Storage.prototype, 'setItem')
@@ -267,15 +352,25 @@ describe('theme provider', () => {
     )
   })
 
-  it.each(['system', 'dark', 'light'] as ThemeMode[])(
-    'hydrates %s consistently and restores without overwriting preferences',
-    async (defaultTheme) => {
+  it.each(
+    ['dark', 'theme-dark'].flatMap((darkClassName) =>
+      (['system', 'dark', 'light'] as ThemeMode[]).map((defaultTheme) => ({
+        darkClassName,
+        defaultTheme,
+      })),
+    ),
+  )(
+    'hydrates $defaultTheme with $darkClassName consistently and restores without overwriting preferences',
+    async ({ defaultTheme, darkClassName }) => {
       media(true)
       window.localStorage.setItem('theme', 'dark')
       const snapshots: string[] = []
       const tree = (
         <StrictMode>
-          <ThemeProvider defaultTheme={defaultTheme}>
+          <ThemeProvider
+            defaultTheme={defaultTheme}
+            darkClassName={darkClassName}
+          >
             <Snapshot
               onRender={(value) => {
                 snapshots.push(value)
@@ -289,8 +384,11 @@ describe('theme provider', () => {
       const initial = `${defaultTheme}/${defaultTheme === 'system' ? 'light' : defaultTheme}`
       expect(container.textContent).toBe(initial)
       document.body.append(container)
-      runInNewContext(getThemeScript({ defaultTheme }), { window, document })
-      expect(document.documentElement).toHaveClass('dark')
+      runInNewContext(getThemeScript({ defaultTheme, darkClassName }), {
+        window,
+        document,
+      })
+      expect(document.documentElement).toHaveClass(darkClassName)
       expect(document.documentElement.style.colorScheme).toBe('dark')
       const toggle = vi.spyOn(document.documentElement.classList, 'toggle')
       const write = vi.spyOn(Storage.prototype, 'setItem')
@@ -307,7 +405,7 @@ describe('theme provider', () => {
         expect(recover).not.toHaveBeenCalled()
         expect(error).not.toHaveBeenCalled()
         expect(write).not.toHaveBeenCalled()
-        expect(toggle).not.toHaveBeenCalledWith('dark', false)
+        expect(toggle).not.toHaveBeenCalledWith(darkClassName, false)
       } finally {
         await act(async () => root?.unmount())
         container.remove()

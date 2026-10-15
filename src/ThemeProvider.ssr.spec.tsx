@@ -11,6 +11,26 @@ function Consumer(): string {
 }
 
 describe('ssr theme provider', () => {
+  it('supports a custom class without browser globals', () => {
+    expect(
+      renderToString(
+        createElement(
+          ThemeProvider,
+          { darkClassName: 'theme-dark' },
+          createElement(Consumer),
+        ),
+      ),
+    ).toBe('system/light')
+    expect(getThemeScript({ darkClassName: 'theme-dark' })).toContain(
+      '"theme-dark"',
+    )
+  })
+
+  it('rejects an invalid class during server rendering', () => {
+    expect(() =>
+      renderToString(createElement(ThemeProvider, { darkClassName: '' })),
+    ).toThrowError(TypeError)
+  })
   it('generates an inline script without browser globals', () => {
     expect(typeof window).toBe('undefined')
     expect(typeof document).toBe('undefined')
