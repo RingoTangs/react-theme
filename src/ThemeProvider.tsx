@@ -115,5 +115,6 @@ export function ThemeProvider({
     [theme, resolvedTheme, setTheme],
   )
 
-  return <ThemeContext value={value}>{children}</ThemeContext>
+  // eslint-disable-next-line react/no-context-provider -- The Provider form is required for React 18 compatibility.
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }

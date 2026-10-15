@@ -1,6 +1,6 @@
 # @ringotangs/react-theme
 
-面向 React 19 的轻量级主题管理库，支持系统偏好、持久化和 SSR。
+兼容目标为 React 18.2+ 和 React 19 的轻量级主题管理库，支持系统偏好、持久化和 SSR。React 18 仍待下文的独立消费者测试验证。
 
 [English](./README.md) | 简体中文
 
@@ -15,7 +15,7 @@
 
 ## 安装
 
-需要 React `^19.0.0`。在 React 19 应用中安装：
+React peer 范围声明为 `^18.2.0 || ^19.0.0`。Workspace 继续使用 React 19，React 18 兼容性需在发布前通过独立消费者测试确认。在 React 应用中安装：
 
 ```sh
 pnpm add @ringotangs/react-theme
@@ -320,6 +320,32 @@ React peer 范围及核心、Vite 子入口。当前库的 Catalog 引用只位�
 消费者通常不会安装这些依赖；这与运行时依赖或 peer 依赖含未展开协议的风险不同。
 若未来这些字段使用 Catalog，须保证发布产物中已转换为标准版本范围。
 本仓库继续保留 `private: true`，直到单独准备发布。
+
+### React 18 消费者验证
+
+`compat/react18` 是根 Workspace 外的私有独立测试目录，固定使用
+`react@18.2.0`、`react-dom@18.2.0`、`@types/react@18.2.79` 和
+`@types/react-dom@18.2.25`。根 Catalog 和两个集成应用继续使用 React 19，
+现有 React/Vite optional peer 配置保持不变。
+
+准备执行兼容性检查时，手动安装该目录的依赖：
+
+```sh
+cd compat/react18
+pnpm install --ignore-scripts
+cd ../..
+pnpm test:react18
+```
+
+`test:react18` 构建库并在临时隔离消费者中检查真实 npm tarball，不自动安装依赖。
+脚本核对依赖版本、渲染器和类型解析路径，以及打包后的库与消费者使用同一 React 18 实例。
+覆盖 ESM/CJS 主题切换、恢复、System 变化、跨标签页 storage 事件、SSR、
+不覆盖偏好的 Hydration，以及 `skipLibCheck: false` 下的 React 18 JSX/CJS 声明。
+仅复用根目录现有的 TypeScript 和 jsdom 工具；React、ReactDOM 均来自独立目录。
+该目录的独立锁文件由手动安装生成，不手工编辑。
+
+当前状态：React 18 测试尚未执行，扩大 peer 范围本身不代表兼容性已验证。
+React 19 继续独立使用 `pnpm check` 和 `pnpm test:e2e` 验证。
 
 ## 集成测试应用
 
