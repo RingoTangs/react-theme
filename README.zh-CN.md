@@ -1,6 +1,6 @@
 # @ringotangs/react-theme
 
-兼容目标为 React 18.2+ 和 React 19 的轻量级主题管理库，支持系统偏好、持久化和 SSR。React 18 仍待下文的独立消费者测试验证。
+支持 React 18.2+ 和 React 19 的轻量级主题管理库，支持系统偏好、持久化和 SSR。
 
 [English](./README.md) | 简体中文
 
@@ -15,7 +15,7 @@
 
 ## 安装
 
-React peer 范围声明为 `^18.2.0 || ^19.0.0`。Workspace 继续使用 React 19，React 18 兼容性需在发布前通过独立消费者测试确认。在 React 应用中安装：
+需要 React `^18.2.0 || ^19.0.0`。Workspace 继续使用 React 19，React 18.2.0 通过独立消费者测试验证真实打包产物。在 React 应用中安装：
 
 ```sh
 pnpm add @ringotangs/react-theme
@@ -306,7 +306,7 @@ pnpm pack:check  # 预览 npm 包内容
 `pnpm-workspace.yaml` 的默认 `catalog` 是第三方 `dependencies`、
 `devDependencies` 版本的唯一配置入口。各 Workspace 项目保留自己的依赖声明，
 使用 `catalog:`；内部依赖保留 `workspace:*`。库的 React peer 范围保持
-`^19.0.0`，与开发环境的 React 版本独立。迁移条目时保留原有版本范围。
+`^18.2.0 || ^19.0.0`，与开发环境的 React 版本独立。迁移条目时保留原有版本范围。
 修改声明后，在仓库根目录手动执行 `pnpm install --lockfile-only`，
 并检查锁文件是否出现非预期升级。
 
@@ -344,8 +344,10 @@ pnpm test:react18
 仅复用根目录现有的 TypeScript 和 jsdom 工具；React、ReactDOM 均来自独立目录。
 该目录的独立锁文件由手动安装生成，不手工编辑。
 
-当前状态：React 18 测试尚未执行，扩大 peer 范围本身不代表兼容性已验证。
-React 19 继续独立使用 `pnpm check` 和 `pnpm test:e2e` 验证。
+已使用 React/ReactDOM 18.2.0 和上述匹配的 React 18 类型实际验证：
+真实打包产物的 ESM/CJS 运行时、JSX/CJS 类型声明均通过。尚未单独执行 React 18
+浏览器 E2E 或其他 React 18 patch/minor 版本测试。React 19 继续独立使用
+`pnpm check` 和 `pnpm test:e2e` 验证。
 
 ## 集成测试应用
 
