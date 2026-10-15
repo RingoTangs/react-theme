@@ -10,6 +10,6 @@ export default defineConfig({
   test: {
     exclude: [...configDefaults.exclude, 'tests/e2e/**'],
     environment: 'jsdom',
-    setupFiles: './src/setup.dom.ts',
+    setupFiles: './tests/setup.dom.ts',
   },
 })
