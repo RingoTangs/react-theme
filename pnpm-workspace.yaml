@@ -7,3 +7,17 @@ trustPolicyExclude:
 
 packages:
   - apps/*
+
+catalog:
+  '@ringotangs/tsconfig': ^0.3.0
+  '@tanstack/react-router': ^1.170.44
+  '@tanstack/react-start': ^1.169.2
+  '@types/node': ^22.20.5
+  '@types/react': ^19.3.0
+  '@types/react-dom': ^19.3.0
+  '@vitejs/plugin-react': ^6.1.2
+  nitro: 3.0.260903-beta
+  react: ^19.3.1
+  react-dom: ^19.3.1
+  typescript: ^5.9.3
+  vite: ^8.3.4
