@@ -1,7 +1,7 @@
 {
   "name": "@react-theme/react-spa",
-  "private": true,
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vite build",
