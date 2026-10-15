@@ -5,7 +5,14 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.build.tsbuildinfo",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": []
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "types/**/*.d.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "types/**/*.d.ts"],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx"
+  ]
 }
