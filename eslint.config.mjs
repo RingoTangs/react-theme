@@ -9,4 +9,7 @@ export default antfu({
   gitignore: true,
   test: true,
   ignores: ['**/pnpm-lock.yaml'],
+  pnpm: {
+    catalogs: false,
+  },
 }).append(prettier)
