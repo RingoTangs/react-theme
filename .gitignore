@@ -20,6 +20,8 @@ coverage
 .output
 .nitro
 .tanstack
+test-results
+playwright-report
 apps/tanstack-start/src/routeTree.gen.ts
 
 # Environment files

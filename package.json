@@ -58,6 +58,7 @@
     "dev": "tsdown",
     "build": "cross-env NODE_ENV=production tsdown",
     "test": "vitest run",
+    "test:e2e": "pnpm build && pnpm --filter @react-theme/react-spa build && pnpm --filter @react-theme/tanstack-start build && playwright test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --check .",

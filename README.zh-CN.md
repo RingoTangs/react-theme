@@ -293,6 +293,29 @@ SSR 主题文本初始使用 Provider 默认值，Hydration 后恢复；head 脚
 Start 在开发或构建时生成被忽略的路由树，因此首次类型检查前需先运行开发或构建。
 修改库后需重新构建根目录的库，应用不会直接读取库源码。
 
+### Playwright 集成测试
+
+依赖和 Chromium 已安装后，在仓库根目录执行：
+
+```sh
+pnpm test:e2e
+```
+
+该命令依次构建根目录库、SPA、Start，再由 Playwright 启动生产 SPA preview
+（`127.0.0.1:4173`）和 Nitro SSR（`127.0.0.1:4174`）。两个端口必须空闲，
+不会复用已有服务。Start 在构建时自动生成被忽略的路由树，干净检出也无需预先生成。
+
+两个 Chromium project 覆盖主题切换、根元素样式、刷新恢复、系统偏好变化、跨标签页同步，
+以及阻止客户端脚本加载后的 head 初始化。Start 额外检查原始 SSR HTML，以及无错误、
+不覆盖已有偏好的 Hydration。测试使用隔离的浏览器上下文及明确的已保存偏好，
+不使用固定延迟。Vitest 保持独立：`pnpm test` 运行单元测试，`pnpm check` 不运行 E2E。
+
+失败时在被忽略的 `test-results/` 中保留 trace 和截图。构建后可用
+`pnpm exec playwright test --project=tanstack-start-chromium` 单独运行 Start，
+或用 `pnpm exec playwright test --list` 列出用例而不启动服务。
+需要浏览器时，在仓库根目录手动执行 `pnpm exec playwright install chromium`；
+测试命令不会自动安装。
+
 ## 许可
 
 [MIT](./LICENSE)

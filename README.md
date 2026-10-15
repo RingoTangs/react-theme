@@ -296,6 +296,32 @@ Start generates its ignored route tree during development/build, so run one of
 those before its first type check. Rebuild the root library after library changes;
 the apps do not import library source files.
 
+### Playwright integration tests
+
+With dependencies and Chromium already installed, run from the repository root:
+
+```sh
+pnpm test:e2e
+```
+
+This builds the root library, the SPA, and Start in order, then Playwright starts
+the production SPA preview on `127.0.0.1:4173` and Nitro SSR on `127.0.0.1:4174`.
+Both ports must be free; existing servers are not reused. Start automatically
+generates its ignored route tree during the build, including in a fresh checkout.
+
+The Chromium projects cover theme selection, root styles, reload persistence,
+system preference changes, cross-tab synchronization, and head initialization
+with client scripts blocked. Start also checks raw SSR HTML and hydration without
+errors or overwriting saved preferences. Tests use isolated browser contexts and
+explicit saved preferences, without fixed delays. Vitest remains separate:
+`pnpm test` runs unit tests; `pnpm check` does not run E2E tests.
+
+Failures retain traces and screenshots under ignored `test-results/`. After a
+build, `pnpm exec playwright test --project=tanstack-start-chromium` runs only the
+Start project; `pnpm exec playwright test --list` lists cases without starting
+servers. Browser installation is a separate manual step when needed:
+`pnpm exec playwright install chromium` (repository root).
+
 ## License
 
 [MIT](./LICENSE)
