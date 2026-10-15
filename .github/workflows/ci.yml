@@ -84,3 +84,46 @@ jobs:
       # 具体行为取决于 package.json 中的 scripts["pack:check"]
       - name: Check package
         run: pnpm pack:check
+
+  e2e:
+    name: E2E (Chromium)
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium and system dependencies
+        run: pnpm exec playwright install --with-deps chromium
+
+      # 先构建库和两个应用，再运行浏览器测试。
+      # Playwright 总超时为 5 分钟，步骤超时为 10 分钟，给产物上传留出时间。
+      - name: Run E2E tests
+        id: e2e
+        timeout-minutes: 10
+        run: pnpm test:e2e --global-timeout=300000
+
+      - name: Upload failed E2E results
+        if: ${{ failure() && steps.e2e.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: test-results/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
