@@ -8,6 +8,7 @@ export default antfu({
   formatters: false,
   gitignore: true,
   test: true,
+  react: true,
   ignores: ['**/pnpm-lock.yaml'],
   pnpm: {
     catalogs: false,
