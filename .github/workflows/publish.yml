@@ -1,10 +1,13 @@
+# npm 发布流程：完整 CI → 构建与打包 → 校验产物 → OIDC 发布。
 name: Publish to npm
 
+# 推送 v 开头的 Tag 时触发，例如 v0.1.0、v0.2.0-alpha.1、v1.0.0-rc.1。
 on:
   push:
     tags:
       - 'v*'
 
+# 验证任务只需读取仓库；OIDC 写权限仅授予下方正式发布 job。
 permissions:
   contents: read
 
@@ -14,42 +17,52 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # 复用同一提交的完整 CI：基础检查、React 18、Vite 矩阵、E2E 和应用类型检查。
   validate:
     name: Validate release
     uses: ./.github/workflows/ci.yml
 
   publish:
     name: Publish
+    # 所有验证成功后才发布；失败或取消时不进入此任务。
     needs: validate
     runs-on: ubuntu-latest
+    # 限制发布任务的最长运行时间，不包含前面的完整 CI。
     timeout-minutes: 15
     permissions:
       contents: read
+      # npm Trusted Publishing 使用此权限获取 OIDC 身份令牌。
       id-token: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
+          # 后续无需 Git 写操作，不在工作目录中保留 Checkout 凭据。
           persist-credentials: false
 
+      # pnpm 版本读取根 package.json 的 packageManager 字段。
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
+          # 与开发环境和 CI 共用 Node.js 版本声明。
           node-version-file: .nvmrc
           registry-url: https://registry.npmjs.org/
+          # 发布任务独立安装依赖，不使用包管理器缓存。
           package-manager-cache: false
 
       # npm Trusted Publishing 使用 npm 11，通过 OIDC 认证，无需 npm Token。
       - name: Update npm
         run: npm install --global npm@11
 
+      # 锁文件与依赖声明不一致时直接失败，不在发布过程中更新锁文件。
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # 例如 v0.1.0 必须对应 package.json 中的 0.1.0，避免发错版本。
       - name: Verify release version
         shell: bash
         run: |
@@ -60,6 +73,8 @@ jobs:
             exit 1
           fi
 
+      # 稳定版使用 latest；alpha、beta、rc 使用同名渠道。
+      # 拒绝其他预发布渠道，避免 next 等版本意外进入 latest。
       - name: Determine npm dist-tag
         id: dist-tag
         shell: bash
@@ -81,11 +96,13 @@ jobs:
           echo "tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
           echo "Publishing $VERSION with npm dist-tag: $DIST_TAG"
 
-      # 完整 CI 已通过；发布 job 单独构建，执行 publint 和 attw。
+      # 不同 job 不共享构建目录，因此发布 job 需要重新生成 dist。
+      # pnpm build 同时执行 publint 和 attw 检查。
       - name: Build
         run: pnpm build
 
       # pnpm pack 将 Catalog / Workspace 引用转换为标准版本范围。
+      # 使用独立临时目录且只允许一个 tarball，将其路径传给后续校验和发布步骤。
       - name: Pack release
         id: pack
         shell: bash
@@ -100,6 +117,8 @@ jobs:
           fi
           echo "tarball=${TARBALLS[0]}" >> "$GITHUB_OUTPUT"
 
+      # 校验实际 tarball，而非仅检查源码中的 package.json：
+      # 包名与版本一致、包非私有、依赖无残留协议、运行时及类型入口完整。
       - name: Verify release tarball
         env:
           RELEASE_TARBALL: ${{ steps.pack.outputs.tarball }}
@@ -138,13 +157,15 @@ jobs:
           console.log(`Verified ${packed.name}@${packed.version}`)
           NODE
 
+      # 预演同一 tarball 的发布，不上传到 registry，也不执行生命周期脚本。
       - name: Preview publish
         env:
           RELEASE_TARBALL: ${{ steps.pack.outputs.tarball }}
           DIST_TAG: ${{ steps.dist-tag.outputs.tag }}
         run: npm publish "$RELEASE_TARBALL" --dry-run --ignore-scripts --registry https://registry.npmjs.org/ --access public --tag "$DIST_TAG"
 
-      # 发布已检查的同一 tarball，不重复执行目录的 prepublishOnly。
+      # 通过 npm Trusted Publishing / OIDC 发布已检查的同一 tarball，无需 NPM_TOKEN。
+      # 检查与构建已显式完成，不再依赖目录的 prepublishOnly，也不重复执行生命周期脚本。
       - name: Publish package
         env:
           RELEASE_TARBALL: ${{ steps.pack.outputs.tarball }}
