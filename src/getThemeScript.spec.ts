@@ -1,4 +1,6 @@
+import type { JSRuleDefinition } from 'eslint'
 import { runInNewContext } from 'node:vm'
+import { Linter } from 'eslint'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getThemeScript, SYSTEM_THEME_QUERY, themeModes } from './index'
 
@@ -23,6 +25,83 @@ function expectTheme(dark: boolean): void {
 }
 
 describe('getThemeScript', () => {
+  it.each(themeModes)(
+    'generates ES5 scripts without modern built-ins for %s',
+    (defaultTheme) => {
+      const linter = new Linter()
+      for (const options of [
+        { defaultTheme },
+        {
+          defaultTheme,
+          storageKey: '</script>"\\\n&>\u2028\u2029',
+          darkClassName: '</script><script>globalThis.injected=true</script>',
+        },
+      ]) {
+        const messages = linter.verify(getThemeScript(options), {
+          languageOptions: { ecmaVersion: 5, sourceType: 'script' },
+          plugins: {
+            inline: {
+              rules: {
+                'browser-calls-only': {
+                  create(context) {
+                    return {
+                      CallExpression(node) {
+                        if (node.callee.type === 'FunctionExpression') return
+                        const callee = context.sourceCode.getText(node.callee)
+                        if (
+                          ![
+                            'window.localStorage.getItem',
+                            'window.matchMedia',
+                            'document.documentElement.classList.add',
+                            'document.documentElement.classList.remove',
+                          ].includes(callee)
+                        ) {
+                          context.report({
+                            node,
+                            message: `Unexpected inline script call: ${callee}`,
+                          })
+                        }
+                      },
+                      NewExpression(node) {
+                        context.report({
+                          node,
+                          message:
+                            'Inline script must not require built-in constructors',
+                        })
+                      },
+                    }
+                  },
+                } satisfies JSRuleDefinition,
+              },
+            },
+          },
+          rules: { 'inline/browser-calls-only': 'error' },
+        })
+        expect(messages).toEqual([])
+      }
+    },
+  )
+
+  it.each(themeModes)(
+    'applies %s repeatedly without classList.toggle or storage writes',
+    (defaultTheme) => {
+      const toggle = vi
+        .spyOn(document.documentElement.classList, 'toggle')
+        .mockImplementation(() => {
+          throw new Error('toggle is unavailable')
+        })
+      const write = vi.spyOn(Storage.prototype, 'setItem')
+      vi.stubGlobal('matchMedia', () => ({ matches: true }))
+      const script = getThemeScript({ defaultTheme })
+      for (let attempt = 0; attempt < 2; attempt++) {
+        runInNewContext(script, { window, document })
+        expectTheme(defaultTheme !== 'light')
+      }
+      expect(toggle).not.toHaveBeenCalled()
+      expect(write).not.toHaveBeenCalled()
+    },
+  )
+
   it.each(themeModes)(
     'applies a custom class for %s without modifying other classes',
     (defaultTheme) => {

@@ -19,7 +19,8 @@ test('the server returns the rendered page and head initialization script', asyn
   expect(html.match(/<button\b/g)).toHaveLength(3)
   const head = html.match(/<head>([\s\S]*?)<\/head>/)?.[1]
   expect(head).toContain('localStorage.getItem("theme")')
-  expect(head).toContain('document.documentElement.classList.toggle')
+  expect(head).toContain('document.documentElement.classList.add')
+  expect(head).toContain('document.documentElement.classList.remove')
 })
 
 test('hydration restores the saved preference without errors or storage writes', async ({

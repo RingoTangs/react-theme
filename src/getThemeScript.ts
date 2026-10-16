@@ -8,7 +8,7 @@ export interface ThemeScriptOptions {
   darkClassName?: string
 }
 
-function serialize(value: string | readonly string[]): string {
+function serialize(value: string): string {
   return JSON.stringify(value)
     .replace(/</g, '\\u003c')
     .replace(/>/g, '\\u003e')
@@ -23,20 +23,24 @@ export function getThemeScript({
   darkClassName = DEFAULT_DARK_CLASS_NAME,
 }: ThemeScriptOptions = {}): string {
   validateDarkClassName(darkClassName)
-  return `(() => {
-  let theme = ${serialize(defaultTheme)};
+  const storedThemeCheck = themeModes
+    .map((mode) => `stored === ${serialize(mode)}`)
+    .join(' || ')
+  return `(function () {
+  var theme = ${serialize(defaultTheme)};
   try {
-    const stored = window.localStorage.getItem(${serialize(storageKey)});
-    if (${serialize(themeModes)}.includes(stored)) theme = stored;
-  } catch {}
-  let dark = theme === 'dark';
+    var stored = window.localStorage.getItem(${serialize(storageKey)});
+    if (${storedThemeCheck}) theme = stored;
+  } catch (error) {}
+  var dark = theme === 'dark';
   if (theme === 'system') {
     try {
       dark = typeof window.matchMedia === 'function' &&
         !!window.matchMedia(${serialize(SYSTEM_THEME_QUERY)}).matches;
-    } catch {}
+    } catch (error) {}
   }
-  document.documentElement.classList.toggle(${serialize(darkClassName)}, dark);
+  if (dark) document.documentElement.classList.add(${serialize(darkClassName)});
+  else document.documentElement.classList.remove(${serialize(darkClassName)});
   document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
 })();`
 }
