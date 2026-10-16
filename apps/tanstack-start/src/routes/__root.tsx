@@ -22,7 +22,6 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 })
 
-// eslint-disable-next-line react-refresh/only-export-components -- Start root routes export their document shell alongside route configuration.
 function RootDocument({ children }: { children: ReactNode }): ReactElement {
   return (
     <html lang="en" suppressHydrationWarning>

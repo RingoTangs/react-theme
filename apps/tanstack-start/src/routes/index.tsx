@@ -4,7 +4,6 @@ import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({ component: Home })
 
-// eslint-disable-next-line react-refresh/only-export-components -- Start route modules export route configuration alongside the page component.
 function Home(): ReactElement {
   const { theme, resolvedTheme, setTheme } = useTheme()
 
