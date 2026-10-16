@@ -1,7 +1,7 @@
 {
   "name": "@ringotangs/react-theme",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packageManager": "pnpm@10.24.0",
   "description": "Lightweight React theme management with system theme detection, persistence, and SSR support.",
   "author": "RingoTangs",
