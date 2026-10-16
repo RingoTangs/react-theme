@@ -12,13 +12,37 @@ import {
 } from './theme'
 import { ThemeContext } from './ThemeContext'
 
+/** Configuration for theme state, persistence, and the document's dark class. */
 export interface ThemeProviderProps {
+  /** Content that can access the theme through `useTheme`. */
   children?: ReactNode
+  /**
+   * Initial mode and fallback when no valid stored preference exists.
+   * A valid stored mode takes priority after mounting.
+   * @default 'system'
+   */
   defaultTheme?: ThemeMode
+  /**
+   * localStorage key used to read, persist, and synchronize the selected mode across tabs.
+   * @default 'theme'
+   */
   storageKey?: string
+  /**
+   * Class toggled on `<html>` for dark mode; must be non-empty and contain no whitespace.
+   * Update your CSS selector to match a custom class name.
+   * @default 'dark'
+   */
   darkClassName?: string
 }
 
+/**
+ * Provide theme state and synchronize the `<html>` dark class and CSS `color-scheme`.
+ * The server and first client render use `defaultTheme`, with `'system'` resolving
+ * to `'light'`. Stored preferences and the system color scheme are restored after mounting.
+ * Storage failures do not prevent theme changes in memory.
+ *
+ * @throws {TypeError} If `darkClassName` is empty or contains whitespace.
+ */
 export function ThemeProvider({
   children,
   defaultTheme = 'system',

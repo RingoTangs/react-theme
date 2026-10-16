@@ -8,7 +8,14 @@ const themeScriptId = 'react-theme-script'
 const existingScript =
   /<script\b[^>]*\sid\s*=\s*(?:"react-theme-script"|'react-theme-script'|react-theme-script(?=[\s>]))/i
 
-/** Inject the theme initialization script before the SPA's first paint. */
+/**
+ * Inject the theme initialization script at the start of the SPA's `<head>` before first paint.
+ * Use the same options as `ThemeProvider`. Skips injection when a script with
+ * the ID `react-theme-script` already exists.
+ *
+ * @param options - Initialization options. Defaults to `{}`; see {@link ThemeScriptOptions} for property defaults.
+ * @throws {TypeError} If an injected script's `darkClassName` is empty or contains whitespace.
+ */
 export function reactTheme(options: ThemeScriptOptions = {}): Plugin {
   return {
     name: 'vite-plugin-react-theme',
