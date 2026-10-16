@@ -95,7 +95,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
-    "@arethetypeswrong/core": "^0.18.5",
+    "@arethetypeswrong/core": "catalog:",
     "@eslint-react/eslint-plugin": "catalog:",
     "@playwright/test": "catalog:",
     "@prettier/plugin-xml": "catalog:",
@@ -112,7 +112,7 @@
     "eslint-plugin-react-refresh": "catalog:",
     "jsdom": "catalog:",
     "prettier": "catalog:",
-    "publint": "^0.3.25",
+    "publint": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tsdown": "catalog:",
