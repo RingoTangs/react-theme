@@ -19,5 +19,6 @@
     "tests/**/*.ts",
     "tests/**/*.tsx"
   ],
-  "exclude": []
+  // Compatibility consumers are typechecked by their packed tarball verification scripts.
+  "exclude": ["tests/compat/**"]
 }
