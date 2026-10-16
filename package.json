@@ -64,6 +64,9 @@
       "onFail": "error"
     }
   },
+  "engines": {
+    "node": "*"
+  },
   "scripts": {
     "dev": "tsdown",
     "build": "cross-env NODE_ENV=production tsdown",
