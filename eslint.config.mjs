@@ -18,5 +18,7 @@ export default antfu({
   rules: {
     // React 18 and React 19 intentionally share package names across catalogs.
     'pnpm/yaml-no-duplicate-catalog-item': 'off',
+    'react-refresh/only-export-components': 'off',
+    'react/no-context-provider': 'off',
   },
 })
