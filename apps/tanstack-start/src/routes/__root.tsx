@@ -26,6 +26,8 @@ function RootDocument({ children }: { children: ReactNode }): ReactElement {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* html 的 suppressHydrationWarning 仅处理脚本修改根元素 class/style 的预期差异。 */}
+        {/* 首次绘制前应用配色；与下方 Provider 共用配置，保持主题规则一致。 */}
         <script
           // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml -- The library safely serializes the inline theme configuration.
           dangerouslySetInnerHTML={{ __html: getThemeScript(themeOptions) }}

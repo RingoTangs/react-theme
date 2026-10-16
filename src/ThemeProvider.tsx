@@ -51,12 +51,14 @@ export function ThemeProvider({
 }: ThemeProviderProps): ReactElement {
   validateDarkClassName(darkClassName)
   const previousDarkClassNameRef = useRef(darkClassName)
+  // 首次渲染只使用默认主题；两端传入相同配置，保证 SSR 与客户端水合内容一致。
   const [state, setState] = useState(() => ({
     theme: defaultTheme,
     storageKey,
     defaultTheme,
     initialized: false,
   }))
+  // 服务端无法获知系统配色，两端首次都将 system 解析为 light。
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>('light')
   const current =
     state.storageKey === storageKey && state.defaultTheme === defaultTheme
@@ -64,6 +66,7 @@ export function ThemeProvider({
   const resolvedTheme = theme === 'system' ? systemTheme : theme
 
   useEffect(() => {
+    // 挂载后再恢复存储偏好，使主题变化成为水合后的正常更新。
     // eslint-disable-next-line react/set-state-in-effect -- Restore browser preferences only after the deterministic hydration render.
     setState({
       theme: readStoredTheme(storageKey, defaultTheme),
@@ -91,6 +94,7 @@ export function ThemeProvider({
   }, [storageKey, defaultTheme])
 
   useEffect(() => {
+    // 系统配色同样延后读取，避免客户端首次渲染与服务端不同。
     // eslint-disable-next-line react/set-state-in-effect -- Detect browser preferences after the shared server/client initial render.
     setSystemTheme(getSystemTheme())
     try {
@@ -112,6 +116,7 @@ export function ThemeProvider({
   }, [])
 
   useEffect(() => {
+    // 等待当前配置的偏好恢复，避免初始默认值覆盖首屏脚本已应用的配色。
     if (!current || !state.initialized) return
     const root = document.documentElement
     if (previousDarkClassNameRef.current !== darkClassName) {

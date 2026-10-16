@@ -54,6 +54,8 @@ export function getThemeScript({
   const storedThemeCheck = themeModes
     .map((mode) => `stored === ${serialize(mode)}`)
     .join(' || ')
+  // 将脚本放入 head，在首次绘制前应用根元素配色以避免主题闪烁。
+  // 脚本不初始化 React 状态；Provider 仍以默认值水合，挂载后再恢复偏好。
   return `(function () {
   var theme = ${serialize(defaultTheme)};
   try {
