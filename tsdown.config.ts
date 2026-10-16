@@ -19,5 +19,12 @@ export default defineConfig({
     neverBundle: [/^react(?:\/|$)/, /^vite(?:\/|$)/],
   },
   banner: `/*! ${pkg.name} v${pkg.version} */`,
+  platform: 'browser',
   minify: isProd,
+  publint: isProd,
+  attw: {
+    enabled: isProd,
+    profile: 'node16',
+    level: 'error',
+  },
 })
