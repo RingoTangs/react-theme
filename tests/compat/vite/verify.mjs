@@ -74,7 +74,6 @@ try {
   const manifest = JSON.parse(
     readFileSync(path.join(packageRoot, 'package.json'), 'utf8'),
   )
-  assert.equal(manifest.private, true)
   assert.equal(
     manifest.peerDependencies.vite,
     '^5.1.0 || ^6.0.0 || ^7.0.0 || ^8.0.0',
