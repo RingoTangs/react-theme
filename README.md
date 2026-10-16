@@ -187,6 +187,7 @@ function RootDocument({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <script
+          // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml -- The library safely serializes the inline theme configuration.
           dangerouslySetInnerHTML={{ __html: getThemeScript(themeOptions) }}
         />
         <HeadContent />
