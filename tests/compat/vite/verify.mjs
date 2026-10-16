@@ -77,7 +77,7 @@ try {
   assert.equal(manifest.private, true)
   assert.equal(
     manifest.peerDependencies.vite,
-    '^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0',
+    '^5.1.0 || ^6.0.0 || ^7.0.0 || ^8.0.0',
   )
   assert.equal(manifest.peerDependencies.react, '^18.2.0 || ^19.0.0')
   assert.equal(manifest.peerDependenciesMeta.vite.optional, true)

@@ -200,12 +200,14 @@ to `defaultTheme: 'system'`, `storageKey: 'theme'`, and `darkClassName: 'dark'`,
 and `ThemeProvider`. The subpath also exports the `ThemeScriptOptions` type.
 Vite is provided by your application; the plugin has no runtime Vite or React
 imports, and the core entry does not import the plugin. The declared Vite peer
-range is `^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0`; the development environment
-remains on Vite 8.
+range is `^5.1.0 || ^6.0.0 || ^7.0.0 || ^8.0.0`; the development environment
+remains on Vite 8. Vite 5 requires at least 5.1.0, which fixes upstream
+`FSWatcher` declarations missing `ref` and `unref` under strict declaration
+checking with the current Node.js types.
 
 `pnpm test:vite-compat` builds and tests the real npm tarball with the locally
 installed Vite, without installing dependencies. CI tests both the minimum
-release and the latest patch release of each major (5–8), including ESM imports,
+supported release and the latest patch release of each major (5–8), including ESM imports,
 TypeScript declarations, development HTML transforms, production builds, and
 synchronous, duplicate-free script injection. Consult the matrix results for
 verified versions; the peer range alone is not evidence that every version has

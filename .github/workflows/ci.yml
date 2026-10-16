@@ -97,8 +97,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Minimum release and latest patch within each supported major.
-        vite: [5.0.0, '5', 6.0.0, '6', 7.0.0, '7', 8.0.0, '8']
+        # Minimum supported release and latest patch within each supported major.
+        vite: [5.1.0, '5', 6.0.0, '6', 7.0.0, '7', 8.0.0, '8']
     steps:
       - name: Checkout
         uses: actions/checkout@v6
