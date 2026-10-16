@@ -20,6 +20,7 @@ export default defineConfig({
   },
   banner: `/*! ${pkg.name} v${pkg.version} */`,
   platform: 'neutral',
+  fixedExtension: true,
   minify: isProd,
   publint: isProd,
   attw: {
