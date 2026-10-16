@@ -17,8 +17,6 @@ Requires React `^18.2.0 || ^19.0.0`:
 pnpm add @ringotangs/react-theme
 ```
 
-If the package is not yet available in your registry, run `pnpm build` and `pnpm pack` in this repository, then install the generated `.tgz` file in your application.
-
 ## Quick start
 
 Wrap your application in `ThemeProvider` and call `useTheme` inside it:

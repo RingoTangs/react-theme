@@ -17,8 +17,6 @@
 pnpm add @ringotangs/react-theme
 ```
 
-尚未发布到所用 registry 时，可在仓库运行 `pnpm build`、`pnpm pack`，再在应用中安装生成的 `.tgz` 文件。
-
 ## 快速开始
 
 用 `ThemeProvider` 包裹应用，在其内部调用 `useTheme`：
