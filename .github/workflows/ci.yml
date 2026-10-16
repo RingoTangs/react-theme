@@ -3,6 +3,9 @@ name: CI
 
 # 定义工作流的触发条件
 on:
+  # 允许发布工作流复用完整检查
+  workflow_call:
+
   # 允许在 GitHub Actions 页面手动触发
   workflow_dispatch:
 
@@ -24,7 +27,7 @@ permissions:
 # 控制并发执行
 concurrency:
   # 同一个 workflow + 同一个 ref（分支 / PR / Tag）归到同一并发组
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
 
   # 当同一组有新的 CI 开始时，取消正在运行的旧 CI
   # 适合 CI 场景，避免旧提交继续占用 Runner
